@@ -1,9 +1,23 @@
 
+import logging
 
 class Player:
 
-    m_protocol = None
+    m_playerManager = None
+    m_conn = None
+    m_ip = ""
     m_numid = 0
 
-    def __init__(self,protocol):
-        self.m_protocol = protocol
+    __recvBuf = ""
+
+    def __init__(self,manager,conn):
+        self.m_playerManager = manager
+        self.m_conn = conn
+        self.m_ip = conn.transport.hostname
+
+    def recvData(self,data):
+        self.__recvBuf += data
+
+    def __parserData(self):
+        pass
+

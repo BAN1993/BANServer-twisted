@@ -6,9 +6,11 @@ import ConfigParser
 
 sys.path.append("logic")
 import server
+import log
 
 if __name__ == '__main__':
 
+	log.initLog("logging.conf")
 	conf = ConfigParser.ConfigParser()
 	conf.read('config.ini')
 
