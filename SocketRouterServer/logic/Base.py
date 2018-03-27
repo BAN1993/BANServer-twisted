@@ -4,9 +4,12 @@ import time
 import struct
 import logging
 
-from cryptManager import gCrypt
+from CryptManager import gCrypt
 
 LEN_INT = 4
+
+XYID_SRS_BEGIN = 10001
+XYID_SRS_END = 20000
 
 class protocolException(RuntimeError):
     def __init__(self, arg):

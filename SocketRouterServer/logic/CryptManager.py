@@ -5,9 +5,9 @@ from binascii import b2a_hex, a2b_hex
 import base64
 import hashlib
 
-import base
+import Base
 
-class cryptManager(object):
+class CryptManager(object):
     m_AES_key = None
     m_AES_mode = AES.MODE_CBC
     m_AES_hadKey = False
@@ -15,18 +15,18 @@ class cryptManager(object):
     def init(self, conf):
         self.m_AES_key = str(conf.get("serverConfig", "aeskey"))
         if len(self.m_AES_key) != 16:
-            raise base.cryptException("crypt key len must be 16")
+            raise Base.cryptException("crypt key len must be 16")
         self.m_AES_hadKey = True
 
     def setAESKey(self, key):
         if len(str(key)) != 16:
-            raise base.cryptException("crypt key len must be 16")
+            raise Base.cryptException("crypt key len must be 16")
         self.m_AES_key = str(key)
         self.m_AES_hadKey = True
 
     def encryptAES(self, buf):
         if not self.m_AES_hadKey or not self.m_AES_key:
-            raise base.cryptException("Key is None")
+            raise Base.cryptException("Key is None")
 
         # 先base64，防止加解密后，去掉了多余的空导致协议解析失败
         text = base64.b64encode(buf)
@@ -48,7 +48,7 @@ class cryptManager(object):
 
     def decryptAES(self, text):
         if not self.m_AES_hadKey or not self.m_AES_key:
-            raise base.cryptException("Key is None")
+            raise Base.cryptException("Key is None")
 
         cryptor = AES.new(self.m_AES_key, self.m_AES_mode, self.m_AES_key)
         plain_text = cryptor.decrypt(a2b_hex(text))
@@ -59,4 +59,4 @@ class cryptManager(object):
     def md5(self, text):
         return hashlib.md5(str(text)).hexdigest()
 
-gCrypt = cryptManager()
+gCrypt = CryptManager()

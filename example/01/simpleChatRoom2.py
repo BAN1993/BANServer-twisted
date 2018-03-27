@@ -133,5 +133,5 @@ dbServer = redisServer()
 server = Server()
 server.protocol = ChatProtocol
 reactor.listenTCP(8008, server)
-print 'server start!'
+print 'SocketRouterServer start!'
 reactor.run()
