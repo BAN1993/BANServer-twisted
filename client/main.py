@@ -1,35 +1,23 @@
-from twisted.internet.protocol import Protocol, ClientFactory
+#encoding:utf-8
 
-gIp = "127.0.0.1"
-gPort = 8300
+import socket
+import sys
+sys.path.append("../SocketRouterServer/logic")
 
-class mProtocol(Protocol):
-
-    def connectionMade(self):
-        data = raw_input("send:")
-        self.transport.write(data)
-
-    def dataReceived(self, data):
-        print("recv data:",data)
-
-    def connectionLost(self, reason):
-        print("connect close")
-
-
-class mFactory(ClientFactory):
-
-    protocol = mProtocol
-
-    def clientConnectionFailed(self, connector, reason):
-        print("clientConnectionFailed")
-
-def main():
-
-    factory = mFactory()
-    from twisted.internet import reactor
-    reactor.connectTCP(gIp,gPort,factory)
-    reactor.run()
-
+import Base
+import Protocol
+from CryptManager import gCrypt
 
 if __name__ == '__main__':
-    main()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('localhost', 8300))
+    gCrypt.setAESKey("SocketRouterSvr")
+
+    recvBuf = sock.recv(1024)
+    print recvBuf
+    #recvData = gCrypt.decryptAES(recvBuf)
+    ret, xyid, packlen, buf = Base.getXYHand(recvBuf)
+    print Base.getBytes(buf)
+    resp = Protocol.RespConnect()
+    resp.make(buf[0:packlen])
+    print "connid=%d" % (resp.connid)

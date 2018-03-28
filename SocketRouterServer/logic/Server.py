@@ -30,8 +30,8 @@ class Server(object):
         gCrypt.init(conf)
 
     def run(self):
-        self.m_connectorServer.run()
         self.m_gameServer.connect()
+        self.m_connectorServer.run()
 
     # Client
     def newClient(self,conn):

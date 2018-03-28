@@ -4,6 +4,7 @@ from Crypto.Cipher import AES
 from binascii import b2a_hex, a2b_hex
 import base64
 import hashlib
+import logging
 
 import Base
 
@@ -14,13 +15,22 @@ class CryptManager(object):
 
     def init(self, conf):
         self.m_AES_key = str(conf.get("serverConfig", "aeskey"))
-        if len(self.m_AES_key) != 16:
-            raise Base.cryptException("crypt key len must be 16")
+        logging.debug("key=%s,len=%d" % (self.m_AES_key,len(self.m_AES_key)))
+        if len(self.m_AES_key) < 16:
+            #raise Base.cryptException("crypt key len must be 16")
+            add = 16 - len(self.m_AES_key)
+            self.m_AES_key = self.m_AES_key + ('\0' * add)
+        elif len(self.m_AES_key) > 16:
+            raise Base.cryptException("crypt key len must <= 16")
+
         self.m_AES_hadKey = True
 
     def setAESKey(self, key):
-        if len(str(key)) != 16:
-            raise Base.cryptException("crypt key len must be 16")
+        if len(str(key)) < 16:
+            add = 16 - len(key)
+            key = key + ('\0' * add)
+        elif len(str(key)) > 16:
+            raise Base.cryptException("crypt key len must <= 16")
         self.m_AES_key = str(key)
         self.m_AES_hadKey = True
 

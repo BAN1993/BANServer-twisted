@@ -3,7 +3,6 @@ import logging
 
 import Base
 import Protocol
-from GameServer.logic.dbManager import gDBManager
 
 class Player:
 

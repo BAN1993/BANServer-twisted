@@ -5,7 +5,7 @@ import logging
 import ConfigParser
 
 sys.path.append("logic")
-import server
+import Server
 import log
 
 if __name__ == '__main__':
@@ -15,7 +15,7 @@ if __name__ == '__main__':
 	conf.read('config.ini')
 
 	try:
-		svr = server.Server(conf)
+		svr = Server.Server(conf)
 		svr.run()
 	except BaseException as e:
 		logging.exception(e)

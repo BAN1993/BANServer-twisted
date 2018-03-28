@@ -18,8 +18,8 @@ class PlayerManager(object):
     def newClient(self,conn):
         pl = Player.Player(self, conn)
         self.m_connid += 1
-        self.m_connList[self.m_connid] = pl
-        logging.info("conn ip=%s,connid=%d" % conn.transport.hostname, self.m_connid)
+        self.m_unAuthList[self.m_connid] = pl
+        logging.info("conn ip=%s,connid=%d" % (conn.transport.hostname, self.m_connid))
 
         resp = Protocol.RespConnect()
         resp.connid = self.m_connid
@@ -46,3 +46,6 @@ class PlayerManager(object):
         if self.m_playerList.has_key(numid):
             logging.info("loseconn numid=%d,ip=%s,del from playerlist" % numid, conn.transport.hostname)
             del self.m_playerList[numid]
+
+    def recvFromServer(self,data):
+        logging.debug(data)
