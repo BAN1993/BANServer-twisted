@@ -48,3 +48,5 @@ class ConnectorClient(object):
 
     def reConnect(self):
         reactor.callLater(1,self.connect)
+
+    def sendData(self,data):

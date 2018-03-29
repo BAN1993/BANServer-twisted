@@ -5,7 +5,7 @@ import sys
 sys.path.append("../SocketRouterServer/logic")
 
 import Base
-import Protocol
+import SRSProtocol
 from CryptManager import gCrypt
 
 if __name__ == '__main__':
@@ -18,6 +18,6 @@ if __name__ == '__main__':
     #recvData = gCrypt.decryptAES(recvBuf)
     ret, xyid, packlen, buf = Base.getXYHand(recvBuf)
     print Base.getBytes(buf)
-    resp = Protocol.RespConnect()
+    resp = SRSProtocol.RespConnect()
     resp.make(buf[0:packlen])
     print "connid=%d" % (resp.connid)

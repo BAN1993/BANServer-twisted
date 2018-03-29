@@ -2,7 +2,7 @@
 import logging
 
 import Player
-import Protocol
+import ProtocolSRS
 
 class PlayerManager(object):
 
@@ -21,7 +21,7 @@ class PlayerManager(object):
         self.m_unAuthList[self.m_connid] = pl
         logging.info("conn ip=%s,connid=%d" % (conn.transport.hostname, self.m_connid))
 
-        resp = Protocol.RespConnect()
+        resp = ProtocolSRS.RespConnect()
         resp.connid = self.m_connid
         buf = resp.pack()
         pl.sendData(buf)

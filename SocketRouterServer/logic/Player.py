@@ -2,7 +2,8 @@
 import logging
 
 import Base
-import Protocol
+import ProtocolSRS
+import ProtocolGAME
 
 class Player:
 
@@ -37,28 +38,15 @@ class Player:
 
     def selectProtocol(self,xyid,data):
         logging.debug("xyid=%d" % xyid)
-        if xyid == Protocol.XYID_REQLOGIN :
-            req = Protocol.ReqLogin()
+        if xyid == ProtocolSRS.XYID_SRS_REQ_LOGIN :
+            req = ProtocolSRS.ReqLogin()
             ret = req.make(data)
-            logging.info("numid=%d,userid=%s,pwd=%s" % (req.numid, req.userid, req.password))
+            logging.info("connid=%d,numid=%d,userid=%s,pwd=%s" % (req.connid,req.numid, req.userid, req.password))
 
-            resp = Protocol.RespLogin()
-            resp.flag = resp.FLAG.SUCCESS
-
-            sql = "select numid,passwd from players where userid='%s'" % req.userid
-            ret, row, rslt = gDBManager.select(sql)
-
-            if not ret:
-                resp.flag = resp.FLAG.DBERR
-                logging.error("select ret err,sql=%s" % sql)
-            elif row <= 0:
-                resp.flag = resp.FLAG.NOUSER
-                logging.info("numid=%d,userid=%s select no data" % (req.numid, req.userid))
-            else:
-                if str(rslt[0][1]) == req.password:
-                    resp.numid = int(rslt[0][0])
-                    if gPlayerManager.addPlayer(conn, resp.numid):
-                        gPlayerManager.broadcastPlayerData(conn, req.numid)
-                else:
-                    resp.flag = resp.FLAG.PWDERR
-                    logging.info("numid=%d,userid=%s pwd err" % (req.numid, req.userid))
+            reqsvr = ProtocolGAME.ReqLogin()
+            reqsvr.connid = req.connid
+            reqsvr.numid = req.numid
+            reqsvr.userid = req.userid
+            reqsvr.password = req.password
+            buf = reqsvr.pack()
+            self.m_playerManager.m_server

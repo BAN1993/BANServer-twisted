@@ -8,10 +8,8 @@ from CryptManager import gCrypt
 
 LEN_INT = 4
 
-XYID_SRS_BEGIN  = 10001
-XYID_SRS_END    = 20000
-XYID_GAME_BEGIN = 20001
-XYID_GAME_END   = 20001
+XYID_SRS_BEGIN = 10001
+XYID_SRS_END = 20000
 
 class protocolException(RuntimeError):
     def __init__(self, arg):

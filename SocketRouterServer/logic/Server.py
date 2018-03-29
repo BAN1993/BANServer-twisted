@@ -31,7 +31,10 @@ class Server(object):
 
     def run(self):
         self.m_gameServer.connect()
-        self.m_connectorServer.run()
+        self.m_connectorServer.begin()
+
+        from twisted.internet import reactor
+        reactor.run()
 
     # Client
     def newClient(self,conn):
@@ -44,5 +47,6 @@ class Server(object):
         self.m_playerManager.loseClient(conn)
 
     # GameSver
-
+    def sendToSvr(self,data):
+        self.m_gameServer.sendData(data)
 
