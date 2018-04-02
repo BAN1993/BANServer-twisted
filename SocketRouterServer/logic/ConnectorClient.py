@@ -1,6 +1,6 @@
 
 from twisted.internet.protocol import ClientFactory, Protocol
-from twisted.internet import reactor
+#from twisted.internet import reactor
 import logging
 
 class ConnectClientProtocl(Protocol):
@@ -9,7 +9,7 @@ class ConnectClientProtocl(Protocol):
         self.factory.m_client.m_server.recvFromServer(self, data)
 
     def connectionLost(self, reason):
-        logging.error("lost gameserver")
+        logging.error("lost gameserver,reason=",reason)
         self.factory.reConnect()
 
 class ConnectClientFactory(ClientFactory):
@@ -22,7 +22,7 @@ class ConnectClientFactory(ClientFactory):
         self.m_client = client
 
     def clientConnectionFailed(self, connector, reason):
-        logging.error("can not connect")
+        logging.error("can not connect,connector=%s.reason=%s" % (str(connector),str(reason)))
         self.reConnect()
 
     def reConnect(self):
@@ -44,9 +44,13 @@ class ConnectorClient(object):
         self.m_factory = ConnectClientFactory(self)
 
     def connect(self):
+        logging.info("connect to ip=%s,post=%d" % (self.m_host, self.m_port))
+        from twisted.internet import reactor
         self.m_connector = reactor.connectTCP(self.m_host, self.m_port, self.m_factory)
 
     def reConnect(self):
+        from twisted.internet import reactor
         reactor.callLater(1,self.connect)
 
     def sendData(self,data):
+        self.m_connector.write(data)

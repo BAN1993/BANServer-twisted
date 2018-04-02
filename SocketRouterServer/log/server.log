@@ -1,9 +1,4 @@
-2018-03-28 22:46:53,563[INFO][Server.py][__init__.25]svrport=8300,gshost="127.0.0.1",gspost=8301
-2018-03-28 22:46:53,565[DEBUG][CryptManager.py][init.18]key=SocketRouterSvr,len=15
-2018-03-28 22:46:55,822[ERROR][ConnectorClient.py][clientConnectionFailed.25]can not connect
-2018-03-28 22:46:56,931[INFO][PlayerManager.py][newClient.22]conn ip=127.0.0.1,connid=1
-2018-03-28 22:46:59,075[ERROR][ConnectorClient.py][clientConnectionFailed.25]can not connect
-2018-03-28 22:47:02,328[ERROR][ConnectorClient.py][clientConnectionFailed.25]can not connect
-2018-03-28 22:47:05,579[ERROR][ConnectorClient.py][clientConnectionFailed.25]can not connect
-2018-03-28 22:47:08,834[ERROR][ConnectorClient.py][clientConnectionFailed.25]can not connect
-2018-03-28 22:47:12,088[ERROR][ConnectorClient.py][clientConnectionFailed.25]can not connect
+2018-04-02 20:23:25,721[INFO][Server.py][__init__.25]svrport=8300,gshost=127.0.0.1,gspost=8301
+2018-04-02 20:23:25,721[DEBUG][CryptManager.py][init.18]key=SocketRouterSvr,len=15
+2018-04-02 20:23:30,000[INFO][ConnectorClient.py][connect.47]connect to ip=127.0.0.1,post=8301
+2018-04-02 20:23:38,459[INFO][PlayerManager.py][newClient.22]conn ip=127.0.0.1,connid=1

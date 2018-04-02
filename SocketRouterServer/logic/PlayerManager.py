@@ -27,6 +27,7 @@ class PlayerManager(object):
         pl.sendData(buf)
 
     def recvFromClient(self,conn,data):
+        logging.debug("numid=%d,connid=%d" % (conn.m_numid,conn.m_connid))
         if self.m_playerList.has_key(conn.m_numid):
             self.m_playerList[conn.m_numid].recvData(data)
         else:
