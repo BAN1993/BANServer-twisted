@@ -1,20 +1,30 @@
 #encoding:utf-8
 
-import socket
 import sys
 from twisted.internet.protocol import ClientFactory, Protocol
-sys.path.append("../SocketRouterServer/logic")
+sys.path.append("../base")
 
 import Base
 import ProtocolSRS
 from CryptManager import gCrypt
+import ConnectorClient
 
-class ConnectClientProtocl(Protocol):
+class client:
 
-    def dataReceived(self, data):
+    m_conn = None
+
+    def __init__(self,host,port):
+        self.m_conn = ConnectorClient.ConnectorClient(self, host, port)
+    def run(self):
+        self.m_conn.connect()
+
+        from twisted.internet import reactor
+        reactor.run()
+
+    def recvFromServer(self,conn,data):
         ret, xyid, packlen, buf = Base.getXYHand(data)
         if xyid == ProtocolSRS.XYID_SRS_RESP_CONNECT:
-            #print Base.getBytes(buf)
+            # print Base.getBytes(buf)
             resp = ProtocolSRS.RespConnect()
             resp.make(buf[0:packlen])
             print "connid=%d" % (resp.connid)
@@ -24,24 +34,10 @@ class ConnectClientProtocl(Protocol):
             req.userid = "test3001"
             req.password = "123456"
             sendbuf = req.pack()
-            self.transport.write(sendbuf)
-
-
-    def connectionLost(self, reason):
-        print("lost gameserver,reason=",reason)
-
-class ConnectClientFactory(ClientFactory):
-
-    protocol = ConnectClientProtocl
-
-    def clientConnectionFailed(self, connector, reason):
-        print("can not connect,connector=%s.reason=%s" % (str(connector),str(reason)))
+            self.m_conn.sendData(sendbuf)
 
 if __name__ == '__main__':
     gCrypt.setAESKey("SocketRouterSvr")
 
-    factory = ConnectClientFactory()
-    from twisted.internet import reactor
-
-    reactor.connectTCP("127.0.0.1", 8300, factory)
-    reactor.run()
+    c = client("127.0.0.1",8300)
+    c.run()

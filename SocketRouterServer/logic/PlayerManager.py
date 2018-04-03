@@ -1,8 +1,11 @@
 
 import logging
+import sys
+sys.path.append("../..")
 
 import Player
 import ProtocolSRS
+
 
 class PlayerManager(object):
 
@@ -18,6 +21,7 @@ class PlayerManager(object):
     def newClient(self,conn):
         pl = Player.Player(self, conn)
         self.m_connid += 1
+        conn.m_connid = self.m_connid
         self.m_unAuthList[self.m_connid] = pl
         logging.info("conn ip=%s,connid=%d" % (conn.transport.hostname, self.m_connid))
 
@@ -34,7 +38,7 @@ class PlayerManager(object):
             if self.m_unAuthList.has_key(conn.m_connid):
                 self.m_unAuthList[conn.m_connid].recvData(data)
             else:
-                logging.warn("can not find conn in two list,numid=%d,connid=%d,ip=%s" % conn.m_numid, conn.m_connid, conn.transport.hostname)
+                logging.warn("can not find conn in two list,numid=%d,connid=%d,ip=%s" % (conn.m_numid, conn.m_connid, conn.transport.hostname))
 
 
 
@@ -42,10 +46,10 @@ class PlayerManager(object):
         numid = conn.m_numid
         connid = conn.m_connid
         if self.m_unAuthList.has_key(connid):
-            logging.info("loseconn connid=%d,ip=%s,del from unauthlist" % connid, conn.transport.hostname)
+            logging.info("loseconn connid=%d,ip=%s,del from unauthlist" % (connid, conn.transport.hostname))
             del self.m_unAuthList[connid]
         if self.m_playerList.has_key(numid):
-            logging.info("loseconn numid=%d,ip=%s,del from playerlist" % numid, conn.transport.hostname)
+            logging.info("loseconn numid=%d,ip=%s,del from playerlist" % (numid, conn.transport.hostname))
             del self.m_playerList[numid]
 
     def recvFromServer(self,data):

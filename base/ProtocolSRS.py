@@ -30,6 +30,7 @@ class RespConnect(Base.protocolBase):
         return self.packEnd()
 
 class ReqLogin(Base.protocolBase):
+    connid = 0
     numid = 0
     userid = ""
     password = ""
@@ -37,6 +38,7 @@ class ReqLogin(Base.protocolBase):
     def make(self, data):
         try:
             self.makeBegin(data[8:])
+            self.connid = self.getInt()
             self.numid = self.getInt()
             self.userid = self.getStr()
             self.password = self.getStr()
@@ -47,6 +49,7 @@ class ReqLogin(Base.protocolBase):
 
     def pack(self):
         self.packBegin(XYID_SRS_REQ_LOGIN)
+        self.packInt(self.connid)
         self.packInt(self.numid)
         self.packStr(self.userid)
         self.packStr(self.password)

@@ -1,9 +1,13 @@
+#encoding:utf-8
 
 import logging
+import sys
+sys.path.append("../..")
 
 import Base
-import ProtocolSRS
 import ProtocolGAME
+import ProtocolSRS
+
 
 class Player:
 
@@ -49,4 +53,4 @@ class Player:
             reqsvr.userid = req.userid
             reqsvr.password = req.password
             buf = reqsvr.pack()
-            self.m_playerManager.m_server
+            self.m_playerManager.m_server.sendToSvr(buf)

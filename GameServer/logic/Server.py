@@ -23,16 +23,15 @@ class Server(object):
         from twisted.internet import reactor
         reactor.run()
 
-    # Client
     def newClient(self,conn):
         logging.info("conn ip=%s" % (conn.transport.hostname))
 
     def recvFromClient(self,conn,data):
-        logging.info("conn ip=%s,data=%s" % conn.transport.hostname,data)
+        # TODO
+        pass
 
     def loseClient(self,conn):
         logging.info("conn ip=%s" % (conn.transport.hostname))
 
-    # GameSver
 
 

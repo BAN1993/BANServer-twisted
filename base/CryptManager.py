@@ -8,6 +8,7 @@ import logging
 
 import Base
 
+
 class CryptManager(object):
     m_AES_key = None
     m_AES_mode = AES.MODE_CBC

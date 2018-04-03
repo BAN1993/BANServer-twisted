@@ -1,10 +1,11 @@
 #encoding:utf-8
 
-import sys
 import logging
 import ConfigParser
-
+import sys
 sys.path.append("logic")
+sys.path.append("..")
+
 import Server
 import log
 

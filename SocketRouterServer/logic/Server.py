@@ -1,6 +1,8 @@
 #encoding:utf-8
 
 import logging
+import sys
+sys.path.append("../..")
 
 import ConnectorServer
 import ConnectorClient
