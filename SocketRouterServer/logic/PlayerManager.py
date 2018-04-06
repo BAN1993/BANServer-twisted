@@ -17,6 +17,8 @@ class PlayerManager(object):
 
     m_server = None
 
+    m_svrDataList = {} # [client conn] = ""
+
     def __init__(self,server):
         self.m_server = server
 
@@ -42,8 +44,6 @@ class PlayerManager(object):
             else:
                 logging.warn("can not find conn in two list,numid=%d,connid=%d,ip=%s" % (conn.m_numid, conn.m_connid, conn.transport.hostname))
 
-
-
     def loseClient(self,conn):
         numid = conn.m_numid
         connid = conn.m_connid
@@ -54,12 +54,33 @@ class PlayerManager(object):
             logging.info("loseconn numid=%d,ip=%s,del from playerlist" % (numid, conn.transport.hostname))
             del self.m_playerList[numid]
 
-    def recvFromServer(self,data):
-        ret, xyid, packlen, buf = Base.getXYHand(data)
+    def newServer(self,conn):
+        self.m_svrDataList[conn] = ""
+
+    def recvFromServer(self,conn,data):
+        if self.m_svrDataList.has_key(conn):
+            self.m_svrDataList[conn] += data
+            while True:
+                packlen = Base.getPackLen(self.m_svrDataList[conn])
+                if packlen <= 0:
+                    return
+                if packlen + Base.LEN_INT > len(self.m_svrDataList[conn]):
+                    return
+
+                data = self.m_svrDataList[conn][0: packlen + Base.LEN_INT]
+                self.m_svrDataList[conn] = self.m_svrDataList[conn][packlen + Base.LEN_INT:]
+                ret, xyid, packlen, buf = Base.getXYHand(data)
+                if ret == False:
+                    continue
+                self.selectProtocol(xyid, buf[0: packlen])
+        else:
+            logging.error("no data list")
+
+    def selectProtocol(self,xyid,data):
         if xyid == ProtocolGAME.XYID_GAME_RESP_LOGIN:
             mpc = ProtocolGAME.RespLogin()
-            ret = mpc.make(buf[0:packlen])
-            logging.debug("connid=%d,flag=%d,numid=%d" % (mpc.connid,mpc.flag,mpc.numid))
+            ret = mpc.make(data)
+            logging.debug("connid=%d,flag=%d,numid=%d" % (mpc.connid, mpc.flag, mpc.numid))
             if self.m_unAuthList.has_key(mpc.connid):
                 pl = self.m_unAuthList[mpc.connid]
                 self.m_playerList[mpc.numid] = pl

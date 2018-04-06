@@ -16,6 +16,7 @@ class Server(object):
 
     m_port = 0
     m_connectorServer = None
+    m_svrDataList = {} # [client conn] = ""
 
     def __init__(self,conf):
         self.m_port = int(conf.get("serverConfig", "port"))
@@ -33,11 +34,26 @@ class Server(object):
 
     def newClient(self,conn):
         logging.info("conn ip=%s" % (conn.transport.hostname))
+        self.m_svrDataList[conn] = ""
 
     def recvFromClient(self,conn,data):
-        ret, xyid, packlen, buf = Base.getXYHand(data)
-        if ret:
-            self.selectProtocol(conn, xyid, buf[0: packlen])
+        if self.m_svrDataList.has_key(conn):
+            self.m_svrDataList[conn] += data
+            while True:
+                packlen = Base.getPackLen(self.m_svrDataList[conn])
+                if packlen <= 0:
+                    return
+                if packlen + Base.LEN_INT > len(self.m_svrDataList[conn]):
+                    return
+
+                data = self.m_svrDataList[conn][0: packlen + Base.LEN_INT]
+                self.m_svrDataList[conn] = self.m_svrDataList[conn][packlen + Base.LEN_INT:]
+                ret, xyid, packlen, buf = Base.getXYHand(data)
+                if ret == False:
+                    continue
+                self.selectProtocol(conn, xyid, buf[0: packlen])
+        else:
+            logging.error("no data list")
 
     def loseClient(self,conn):
         logging.info("conn ip=%s" % (conn.transport.hostname))

@@ -49,8 +49,11 @@ class Server(object):
         self.m_playerManager.loseClient(conn)
 
     # GameSver
+    def newServer(self,conn):
+        self.m_playerManager.newServer(conn)
+
     def recvFromServer(self,conn,data):
-        self.m_playerManager.recvFromServer(data)
+        self.m_playerManager.recvFromServer(conn,data)
 
     def sendToSvr(self,data):
         self.m_gameServer.sendData(data)

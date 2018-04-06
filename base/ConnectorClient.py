@@ -7,6 +7,7 @@ class ConnectClientProtocl(Protocol):
 
     def connectionMade(self):
         self.factory.m_client.setConn(self)
+        self.factory.m_client.m_server.newServer(self)
 
     def dataReceived(self, data):
         self.factory.m_client.m_server.recvFromServer(self, data)

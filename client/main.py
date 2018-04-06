@@ -11,6 +11,7 @@ import ConnectorClient
 class client:
 
     m_conn = None
+    __recvBuf = ""
 
     def __init__(self,host,port):
         self.m_conn = ConnectorClient.ConnectorClient(self, host, port)
@@ -21,7 +22,18 @@ class client:
         from twisted.internet import reactor
         reactor.run()
 
+    def newServer(self,conn):
+        print "new server"
+
     def recvFromServer(self,conn, data):
+        self.__recvBuf += data
+        packlen = Base.getPackLen(self.__recvBuf)
+        if packlen <= 0:
+            return
+        if packlen + Base.LEN_INT > len(self.__recvBuf):
+            return
+        data = self.__recvBuf[0: packlen + Base.LEN_INT]
+        self.__recvBuf = self.__recvBuf[packlen + Base.LEN_INT:]
         ret, xyid, packlen, buf = Base.getXYHand(data)
         if xyid == ProtocolSRS.XYID_SRS_RESP_CONNECT:
             # print Base.getBytes(buf)
