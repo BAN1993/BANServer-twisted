@@ -3,8 +3,10 @@ import logging
 import sys
 sys.path.append("../..")
 
+import Base
 import Player
 import ProtocolSRS
+import ProtocolGAME
 
 
 class PlayerManager(object):
@@ -53,4 +55,21 @@ class PlayerManager(object):
             del self.m_playerList[numid]
 
     def recvFromServer(self,data):
-        logging.debug(data)
+        ret, xyid, packlen, buf = Base.getXYHand(data)
+        if xyid == ProtocolGAME.XYID_GAME_RESP_LOGIN:
+            mpc = ProtocolGAME.RespLogin()
+            ret = mpc.make(buf[0:packlen])
+            logging.debug("connid=%d,flag=%d,numid=%d" % (mpc.connid,mpc.flag,mpc.numid))
+            if self.m_unAuthList.has_key(mpc.connid):
+                pl = self.m_unAuthList[mpc.connid]
+                self.m_playerList[mpc.numid] = pl
+                del self.m_unAuthList[mpc.connid]
+
+                resp = ProtocolSRS.RespLogin()
+                resp.numid = mpc.numid
+                resp.flag = mpc.flag
+                buf = resp.pack()
+
+                self.m_playerList[mpc.numid].sendData(buf)
+            else:
+                logging.error("can not find in auth list,connid=%d" % mpc.connid)

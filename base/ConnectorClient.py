@@ -33,6 +33,7 @@ class ConnectClientFactory(ClientFactory):
 
 class ConnectorClient(object):
 
+    m_reconnect = True
     m_host = ""
     m_port = 0
 
@@ -54,12 +55,17 @@ class ConnectorClient(object):
         self.m_connector = reactor.connectTCP(self.m_host, self.m_port, self.m_factory)
 
     def reConnect(self):
-        from twisted.internet import reactor
-        reactor.callLater(1,self.connect)
+        if self.m_reconnect:
+            from twisted.internet import reactor
+            reactor.callLater(1,self.connect)
 
     def setConn(self,conn):
+        logging.info("set conn")
         self.m_conn = conn
 
     def sendData(self,data):
         #self.m_connector.write(data)
         self.m_conn.transport.write(data)
+
+    def setReconnect(self,setbool):
+        self.m_reconnect = setbool
