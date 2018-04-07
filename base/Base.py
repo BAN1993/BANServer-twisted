@@ -21,6 +21,10 @@ class cryptException(RuntimeError):
     def __init__(self, arg):
         self.msg = arg
 
+class dbException(RuntimeError):
+    def __init__(self, arg):
+        self.msg = arg
+
 class protocolBase(object):
     bs_nowindex = 0
     bs_buf = ""

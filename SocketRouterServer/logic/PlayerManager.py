@@ -81,16 +81,25 @@ class PlayerManager(object):
             mpc = ProtocolGAME.RespLogin()
             ret = mpc.make(data)
             logging.debug("connid=%d,flag=%d,numid=%d" % (mpc.connid, mpc.flag, mpc.numid))
+
+            pl = None
             if self.m_unAuthList.has_key(mpc.connid):
                 pl = self.m_unAuthList[mpc.connid]
-                self.m_playerList[mpc.numid] = pl
-                del self.m_unAuthList[mpc.connid]
-
-                resp = ProtocolSRS.RespLogin()
-                resp.numid = mpc.numid
-                resp.flag = mpc.flag
-                buf = resp.pack()
-
-                self.m_playerList[mpc.numid].sendData(buf)
             else:
                 logging.error("can not find in auth list,connid=%d" % mpc.connid)
+                return
+
+            if mpc.flag == mpc.FLAG.SUCCESS and ret:
+                self.m_playerList[mpc.numid] = pl
+                del self.m_unAuthList[mpc.connid]
+            else:
+                logging.warning("login err,connid=%d,flag=%d,numid=%d" % (mpc.connid, mpc.flag, mpc.numid))
+
+            resp = ProtocolSRS.RespLogin()
+            resp.numid = mpc.numid
+            resp.flag = mpc.flag
+            buf = resp.pack()
+            pl.sendData(buf)
+
+
+

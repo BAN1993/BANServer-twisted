@@ -52,6 +52,9 @@ class client:
             resp = ProtocolSRS.RespLogin()
             resp.make(buf[0:packlen])
             print "flag=%d,numid=%d" % (resp.flag,resp.numid)
+            if resp.flag != resp.FLAG.SUCCESS:
+                from twisted.internet import reactor
+                reactor.stop()
 
 if __name__ == '__main__':
     gCrypt.setAESKey("SocketRouterSvr")

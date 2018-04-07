@@ -11,6 +11,8 @@ from CryptManager import gCrypt
 
 class Server(object):
 
+    m_isRunning = False
+
     m_port = 0
     m_connectorServer = None
     m_playerManager = None
@@ -20,13 +22,13 @@ class Server(object):
     m_gameSvrPort = 0
     m_gameServer = None
 
-    def __init__(self,conf):
+    def init(self,conf):
         self.m_port = int(conf.get("serverConfig", "port"))
-        self.m_gameSvrHost = str(conf.get("GameServer","host"))
+        self.m_gameSvrHost = str(conf.get("GameServer", "host"))
         self.m_gameSvrPort = int(conf.get("GameServer", "port"))
-        logging.info("svrport=%d,gshost=%s,gspost=%d" % (self.m_port,self.m_gameSvrHost,self.m_gameSvrPort))
+        logging.info("svrport=%d,gshost=%s,gspost=%d" % (self.m_port, self.m_gameSvrHost, self.m_gameSvrPort))
         self.m_connectorServer = ConnectorServer.ConnectorServer(self, self.m_port)
-        self.m_gameServer  = ConnectorClient.ConnectorClient(self,self.m_gameSvrHost,self.m_gameSvrPort)
+        self.m_gameServer = ConnectorClient.ConnectorClient(self, self.m_gameSvrHost, self.m_gameSvrPort)
         self.m_playerManager = PlayerManager.PlayerManager(self)
 
         gCrypt.init(conf)
@@ -36,7 +38,13 @@ class Server(object):
         self.m_connectorServer.begin()
 
         from twisted.internet import reactor
+        self.m_isRunning = True
         reactor.run()
+
+    def stop(self):
+        if self.m_isRunning:
+            from twisted.internet import reactor
+            reactor.stop()
 
     # Client
     def newClient(self,conn):

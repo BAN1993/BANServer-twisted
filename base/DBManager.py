@@ -34,8 +34,7 @@ class DBManager(object):
             self.isConnected = True
             return True
         except BaseException as e:
-            logging.exception(e)
-            return False
+            raise
     ## def init(self, ip, port, user, passwd, datatable):
 
     def mPing(self):

@@ -11,17 +11,19 @@ import log
 
 if __name__ == '__main__':
 
-	log.initLog("logging.conf")
-	conf = ConfigParser.ConfigParser()
-	conf.read('config.ini')
+    log.initLog("logging.conf")
+    conf = ConfigParser.ConfigParser()
+    conf.read('config.ini')
 
-	try:
-		svr = Server.Server(conf)
-		svr.run()
-	except BaseException as e:
-		logging.exception(e)
-		exit()
-	else:
-		logging.error("Crash Unknown!")
-		exit()
+    svr = None
+    try:
+        svr = Server.Server()
+        svr.init(conf)
+        svr.run()
+    except BaseException as e:
+        logging.exception(e)
+        svr.stop()
+    else:
+        logging.error("Crash Unknown!")
+        svr.stop()
 
