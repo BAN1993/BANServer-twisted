@@ -66,7 +66,10 @@ class ConnectorClient(object):
 
     def sendData(self,data):
         #self.m_connector.write(data)
-        self.m_conn.transport.write(data)
+        if self.m_conn:
+            self.m_conn.transport.write(data)
+        else:
+            logging.error("server conn it none")
 
     def setReconnect(self,setbool):
         self.m_reconnect = setbool

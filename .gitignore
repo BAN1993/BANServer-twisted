@@ -8,3 +8,4 @@ doc/auth.xmind
 *.pyc
 *.log
 *.log
+.idea/inspectionProfiles/Project_Default.xml

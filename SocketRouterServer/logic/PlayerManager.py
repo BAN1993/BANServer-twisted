@@ -35,7 +35,7 @@ class PlayerManager(object):
         pl.sendData(buf)
 
     def recvFromClient(self,conn,data):
-        logging.debug("numid=%d,connid=%d" % (conn.m_numid,conn.m_connid))
+        logging.debug("numid=%d,connid=%d,conn=%s" % (conn.m_numid,conn.m_connid,str(conn)))
         if self.m_playerList.has_key(conn.m_numid):
             self.m_playerList[conn.m_numid].recvData(data)
         else:
@@ -90,6 +90,7 @@ class PlayerManager(object):
                 return
 
             if mpc.flag == mpc.FLAG.SUCCESS and ret:
+                pl.setPlayerData(mpc.numid)
                 self.m_playerList[mpc.numid] = pl
                 del self.m_unAuthList[mpc.connid]
             else:
@@ -100,6 +101,23 @@ class PlayerManager(object):
             resp.flag = mpc.flag
             buf = resp.pack()
             pl.sendData(buf)
+
+        elif xyid == ProtocolGAME.XYID_GAME_RESP_GOLD:
+            mpc = ProtocolGAME.RespGold()
+            ret = mpc.make(data)
+            logging.debug("numid=%d,gold=%Ld" % (mpc.numid, mpc.gold))
+
+            if self.m_playerList.has_key(mpc.numid):
+                resp = ProtocolSRS.RespGold()
+                resp.numid = mpc.numid
+                resp.gold = mpc.gold
+                buf = resp.pack()
+                self.m_playerList[mpc.numid].sendData(buf)
+            else:
+                logging.warning("can not find in player list,numid=%d" % mpc.numid)
+
+        else:
+            logging.warning("unknown xy,xyid=%d" % xyid)
 
 
 

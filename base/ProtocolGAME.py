@@ -6,6 +6,8 @@ HANLEN = 8
 
 XYID_GAME_REQ_LOGIN = Base.XYID_GAME_BEGIN + 1 # 20002
 XYID_GAME_RESP_LOGIN = Base.XYID_GAME_BEGIN + 2 # 20003
+XYID_GAME_REQ_GOLD = Base.XYID_GAME_BEGIN + 3 # 20004
+XYID_GAME_RESP_GOLD = Base.XYID_GAME_BEGIN + 4 # 20005
 
 class ReqLogin(Base.protocolBase):
     connid = 0
@@ -32,7 +34,6 @@ class ReqLogin(Base.protocolBase):
         self.packStr(self.userid)
         self.packStr(self.password)
         return self.packEnd()
-
 
 class RespLogin(Base.protocolBase):
     FLAG = Base.getEnum(SUCCESS=0,
@@ -61,7 +62,42 @@ class RespLogin(Base.protocolBase):
         self.packInt(self.numid)
         return self.packEnd()
 
+class ReqGold(Base.protocolBase):
+    numid = 0
 
+    def make(self, data):
+        try:
+            self.makeBegin(data[8:])
+            self.numid = self.getInt()
+        except Base.protocolException, e:
+            logging.error("ReqGold err,msg=" + e.msg)
+            return False
+        return True
+
+    def pack(self):
+        self.packBegin(XYID_GAME_REQ_GOLD)
+        self.packInt(self.numid)
+        return self.packEnd()
+
+class RespGold(Base.protocolBase):
+    numid = 0
+    gold = 0
+
+    def make(self, data):
+        try:
+            self.makeBegin(data[8:])
+            self.numid = self.getInt()
+            self.gold = self.getInt()
+        except Base.protocolException, e:
+            logging.error("RespGold err,msg=" + e.msg)
+            return False
+        return True
+
+    def pack(self):
+        self.packBegin(XYID_GAME_RESP_GOLD)
+        self.packInt(self.numid)
+        self.packInt(self.gold)
+        return self.packEnd()
 
 
 

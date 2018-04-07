@@ -5,7 +5,6 @@ import sys
 sys.path.append("../base")
 
 import Base
-import DBManager
 import ConnectorServer
 import ProtocolSRS
 import ProtocolGAME
@@ -71,7 +70,7 @@ class Server(object):
         if xyid == ProtocolGAME.XYID_GAME_REQ_LOGIN :
             req = ProtocolGAME.ReqLogin()
             ret = req.make(data)
-            logging.info("connid=%d,numid=%d,userid=%s,pwd=%s" % (req.connid,req.numid, req.userid, req.password))
+            logging.info("ReqLogin:connid=%d,numid=%d,userid=%s,pwd=%s" % (req.connid,req.numid, req.userid, req.password))
 
             resp = ProtocolGAME.RespLogin()
             resp.connid = req.connid
@@ -95,4 +94,28 @@ class Server(object):
 
             buf = resp.pack()
             conn.transport.write(buf)
+
+        elif xyid == ProtocolGAME.XYID_GAME_REQ_GOLD:
+            req = ProtocolGAME.ReqGold()
+            ret = req.make(data)
+            logging.debug("ReqGold:numid=%d" % req.numid)
+
+            resp = ProtocolGAME.RespGold()
+            resp.numid = req.numid
+
+            sql = "select gold from players where numid=%d" % req.numid
+            ret, row, rslt = gDBManager.select(sql)
+            if not ret:
+                logging.error("select ret err,sql=%s" % sql)
+            elif row <= 0:
+                logging.info("numid=%d select no data" % req.numid)
+            else:
+                resp.gold = int(rslt[0][0])
+                logging.debug("numid=%d,gold=%d" % (req.numid, resp.gold))
+
+            buf = resp.pack()
+            conn.transport.write(buf)
+
+        else:
+            logging.warning("unknown xy,xyid=%d" % xyid)
 

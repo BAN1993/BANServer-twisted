@@ -63,6 +63,6 @@ class Server(object):
     def recvFromServer(self,conn,data):
         self.m_playerManager.recvFromServer(conn,data)
 
-    def sendToSvr(self,data):
+    def sendToServer(self,data):
         self.m_gameServer.sendData(data)
 

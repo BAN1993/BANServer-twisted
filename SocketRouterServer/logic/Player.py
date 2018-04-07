@@ -40,12 +40,15 @@ class Player:
     def sendData(self,data):
         self.m_conn.transport.write(data)
 
+    def setPlayerData(self,numid):
+        self.m_numid = numid
+        self.m_conn.m_numid = numid
+
     def selectProtocol(self,xyid,data):
-        logging.debug("xyid=%d" % xyid)
         if xyid == ProtocolSRS.XYID_SRS_REQ_LOGIN :
             req = ProtocolSRS.ReqLogin()
             ret = req.make(data)
-            logging.info("connid=%d,numid=%d,userid=%s,pwd=%s" % (req.connid,req.numid, req.userid, req.password))
+            logging.info("ReqLogin:connid=%d,numid=%d,userid=%s,pwd=%s" % (req.connid,req.numid, req.userid, req.password))
 
             reqsvr = ProtocolGAME.ReqLogin()
             reqsvr.connid = req.connid
@@ -53,4 +56,17 @@ class Player:
             reqsvr.userid = req.userid
             reqsvr.password = req.password
             buf = reqsvr.pack()
-            self.m_playerManager.m_server.sendToSvr(buf)
+            self.m_playerManager.m_server.sendToServer(buf)
+
+        elif xyid == ProtocolSRS.XYID_SRS_REQ_GOLD:
+            req = ProtocolSRS.ReqGold()
+            ret = req.make(data)
+            logging.info("ReqGold:numid=%d" % req.numid)
+
+            reqsvr = ProtocolGAME.ReqGold()
+            reqsvr.numid = req.numid
+            buf = reqsvr.pack()
+            self.m_playerManager.m_server.sendToServer(buf)
+
+        else:
+            logging.warning("unknown xy,xyid=%d" % xyid)

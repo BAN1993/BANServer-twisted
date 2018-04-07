@@ -67,9 +67,11 @@ class protocolBase(object):
         self.bs_buf = struct.pack("ii", xyid, 0)
 
     def packInt(self,num):
+        num = int(num)
         self.bs_buf = self.bs_buf + struct.pack("i", num)
 
     def packStr(self,src):
+        src = str(src)
         strlen = len(src)
         self.bs_buf = self.bs_buf + struct.pack("i" + str(strlen) + "s", strlen, src)
 
