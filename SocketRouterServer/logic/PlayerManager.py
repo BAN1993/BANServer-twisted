@@ -1,7 +1,7 @@
 
 import logging
 import sys
-sys.path.append("../..")
+sys.path.append("../base")
 
 import Base
 import Player

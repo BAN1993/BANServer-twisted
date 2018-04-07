@@ -2,7 +2,7 @@
 
 import logging
 import sys
-sys.path.append("../..")
+sys.path.append("../base")
 
 import ConnectorServer
 import ConnectorClient
