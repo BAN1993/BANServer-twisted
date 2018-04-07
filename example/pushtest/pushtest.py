@@ -84,6 +84,7 @@ class client:
         if self.m_now >= self.m_times:
             from twisted.internet import reactor
             reactor.stop()
+            print "test end"
             return
         self.m_now += 1
         req = ProtocolSRS.ReqGold()
@@ -103,6 +104,6 @@ if __name__ == '__main__':
 
     userid = str(sys.argv[1])
     times = int(sys.argv[2])
-
+    print("userid=%s,times=%d" % (userid,times))
     c = client("127.0.0.1",8300,userid,times)
     c.run()
