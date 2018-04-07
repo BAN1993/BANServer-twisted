@@ -1,26 +1,18 @@
-2018-04-06 14:47:43,005[INFO][Server.py][__init__.27]svrport=8300,gshost=127.0.0.1,gspost=8301
-2018-04-06 14:47:43,005[DEBUG][CryptManager.py][init.19]key=SocketRouterSvr,len=15
-2018-04-06 14:47:43,005[INFO][ConnectorClient.py][connect.53]connect to ip=127.0.0.1,post=8301
-2018-04-06 14:47:43,032[INFO][ConnectorClient.py][setConn.63]set conn
-2018-04-06 14:47:44,641[INFO][PlayerManager.py][newClient.28]conn ip=127.0.0.1,connid=1
-2018-04-06 14:47:44,641[DEBUG][PlayerManager.py][recvFromClient.36]numid=0,connid=1
-2018-04-06 14:47:44,642[DEBUG][Player.py][selectProtocol.44]xyid=10003
-2018-04-06 14:47:44,642[INFO][Player.py][selectProtocol.48]connid=1,numid=1,userid=test3001,pwd=123456
-2018-04-06 14:47:44,665[DEBUG][PlayerManager.py][recvFromServer.62]connid=1,flag=0,numid=1
-2018-04-06 14:48:05,825[INFO][PlayerManager.py][newClient.28]conn ip=127.0.0.1,connid=2
-2018-04-06 14:48:05,825[DEBUG][PlayerManager.py][recvFromClient.36]numid=0,connid=2
-2018-04-06 14:48:05,825[DEBUG][Player.py][selectProtocol.44]xyid=10003
-2018-04-06 14:48:05,825[INFO][Player.py][selectProtocol.48]connid=2,numid=1,userid=test3001,pwd=123456
-2018-04-06 14:48:05,849[DEBUG][PlayerManager.py][recvFromServer.62]connid=2,flag=0,numid=1
-2018-04-06 14:48:11,313[INFO][PlayerManager.py][newClient.28]conn ip=127.0.0.1,connid=3
-2018-04-06 14:48:11,315[DEBUG][PlayerManager.py][recvFromClient.36]numid=0,connid=3
-2018-04-06 14:48:11,315[DEBUG][Player.py][selectProtocol.44]xyid=10003
-2018-04-06 14:48:11,315[INFO][Player.py][selectProtocol.48]connid=3,numid=1,userid=test3001,pwd=123456
-2018-04-06 14:48:11,341[DEBUG][PlayerManager.py][recvFromServer.62]connid=3,flag=0,numid=1
-2018-04-06 14:49:00,944[INFO][PlayerManager.py][newClient.28]conn ip=127.0.0.1,connid=4
-2018-04-06 14:49:00,944[DEBUG][PlayerManager.py][recvFromClient.36]numid=0,connid=4
-2018-04-06 14:49:00,944[DEBUG][Player.py][selectProtocol.44]xyid=10003
-2018-04-06 14:49:00,944[INFO][Player.py][selectProtocol.48]connid=4,numid=1,userid=test3003,pwd=123456
-2018-04-06 14:49:00,966[DEBUG][PlayerManager.py][recvFromServer.62]connid=4,flag=0,numid=10
-2018-04-06 14:49:05,976[ERROR][ConnectorClient.py][connectionLost.15]lost gameserver,reason=[Failure instance: Traceback (failure with no frames): <class 'twisted.internet.error.ConnectionLost'>: Connection to the other side was lost in a non-clean fashion.
+2018-04-07 13:48:39,421[INFO][Server.py][__init__.27]svrport=8300,gshost=127.0.0.1,gspost=8301
+2018-04-07 13:48:39,421[DEBUG][CryptManager.py][init.19]key=SocketRouterSvr,len=15
+2018-04-07 13:48:39,422[INFO][ConnectorClient.py][connect.54]connect to ip=127.0.0.1,post=8301
+2018-04-07 13:48:39,439[INFO][ConnectorClient.py][setConn.64]set conn
+2018-04-07 13:48:43,281[INFO][PlayerManager.py][newClient.30]conn ip=127.0.0.1,connid=1
+2018-04-07 13:48:43,282[DEBUG][PlayerManager.py][recvFromClient.38]numid=0,connid=1
+2018-04-07 13:48:43,282[DEBUG][Player.py][selectProtocol.44]xyid=10003
+2018-04-07 13:48:43,282[INFO][Player.py][selectProtocol.48]connid=1,numid=1,userid=test3003,pwd=123456
+2018-04-07 13:48:43,284[DEBUG][PlayerManager.py][selectProtocol.83]connid=1,flag=0,numid=10
+2018-04-07 13:48:48,585[ERROR][ConnectorClient.py][connectionLost.16]lost gameserver,reason=[Failure instance: Traceback (failure with no frames): <class 'twisted.internet.error.ConnectionDone'>: Connection was closed cleanly.
 ]
+2018-04-07 13:48:49,586[INFO][ConnectorClient.py][connect.54]connect to ip=127.0.0.1,post=8301
+2018-04-07 13:48:49,587[INFO][ConnectorClient.py][setConn.64]set conn
+2018-04-07 13:48:54,624[INFO][PlayerManager.py][newClient.30]conn ip=127.0.0.1,connid=2
+2018-04-07 13:48:54,625[DEBUG][PlayerManager.py][recvFromClient.38]numid=0,connid=2
+2018-04-07 13:48:54,625[DEBUG][Player.py][selectProtocol.44]xyid=10003
+2018-04-07 13:48:54,625[INFO][Player.py][selectProtocol.48]connid=2,numid=1,userid=test3003,pwd=123456
+2018-04-07 13:48:54,627[DEBUG][PlayerManager.py][selectProtocol.83]connid=2,flag=0,numid=10
