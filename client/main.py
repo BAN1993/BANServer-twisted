@@ -34,7 +34,7 @@ class client:
             return
         data = self.__recvBuf[0: packlen + Base.LEN_INT]
         self.__recvBuf = self.__recvBuf[packlen + Base.LEN_INT:]
-        ret, xyid, packlen, buf = Base.getXYHand(data)
+        ret, packlen, appid, numid, xyid, buf = Base.getXYHand(data)
         if xyid == ProtocolSRS.XYID_SRS_RESP_CONNECT:
             # print Base.getBytes(buf)
             resp = ProtocolSRS.RespConnect()

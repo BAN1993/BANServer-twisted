@@ -55,7 +55,7 @@ class Server(object):
 
                 data = self.m_svrDataList[conn][0: packlen + Base.LEN_INT]
                 self.m_svrDataList[conn] = self.m_svrDataList[conn][packlen + Base.LEN_INT:]
-                ret, xyid, packlen, buf = Base.getXYHand(data)
+                ret, packlen, appid, numid, xyid, buf = Base.getXYHand(data)
                 if ret == False:
                     continue
                 self.selectProtocol(conn, xyid, buf[0: packlen])

@@ -4,8 +4,18 @@ import time
 import struct
 import logging
 
+"""
+# Protocol Hand
+# buflen    2   H   unsigned short
+# appid     2   H   unsigned short
+# numid     4   I   unsigned int
+# xyid      4   I   unsigned int
+"""
+
 from CryptManager import gCrypt
 
+LEN_HAND = 12
+LEN_SHORT = 2
 LEN_INT = 4
 
 XYID_SRS_BEGIN  = 10001
@@ -58,13 +68,18 @@ class protocolBase(object):
     # ------------------------------------------------------------------------------------------------------------------------
     def replaceHand(self):
         strlen = len(self.bs_buf)
-        lenbuf = struct.pack("i",strlen)
-        for i in range(4,8):
-            self.bs_buf = self.bs_buf[:i] + lenbuf[i-4] + self.bs_buf[(i+1):]
+        lenbuf = struct.pack("H",strlen)
+        for i in range(3,4):
+            self.bs_buf = self.bs_buf[:i] + lenbuf[i-3] + self.bs_buf[(i+1):]
+
+    def setHand(self,appid=0,numid=0):
+        setbuf = struct.pack("HI",appid,numid)
+        for i in range(5,10):
+            self.bs_buf = self.bs_buf[:i] + setbuf[i-5] + self.bs_buf[(i+1):]
 
     def packBegin(self,xyid):
         self.bs_nowindex = 0
-        self.bs_buf = struct.pack("ii", xyid, 0)
+        self.bs_buf = struct.pack("HHII", 0,0,0,xyid)
 
     def packInt(self,num):
         num = int(num)
@@ -79,8 +94,8 @@ class protocolBase(object):
         self.replaceHand()
         cryptBuf = gCrypt.encryptAES(self.bs_buf)
         buflen = len(cryptBuf)
-        lenbytes = struct.pack("i", buflen)
-        cryptBuf = lenbytes[0 : 4] + cryptBuf
+        lenbytes = struct.pack("I", buflen)
+        cryptBuf = lenbytes[0 : 2] + cryptBuf
         return cryptBuf
 
 def getEnum(**enums):
@@ -96,24 +111,24 @@ def getBytesIndex(data, begin, strlen):
     return ' '.join(['0x%x' % ord(data[x]) for x in range(begin, begin + strlen)])
 
 def getXYHand(data):
-    if len(data)<LEN_INT:
-        return False, 0, 0, ""
-    (alllen,) = struct.unpack("i", data[0 : LEN_INT] )
-    if len(data) < alllen + LEN_INT:
-        return False, 0, 0, ""
-    xyDataSrc = data[LEN_INT : alllen + LEN_INT]
+    if len(data)<LEN_HAND:
+        return False, 0, 0, 0, 0, ""
+    (alllen,) = struct.unpack("I", data[0 : LEN_SHORT] )
+    if len(data) < alllen + LEN_SHORT:
+        return False, 0, 0, 0, 0, ""
+    xyDataSrc = data[LEN_SHORT : alllen + LEN_SHORT]
     xyData = gCrypt.decryptAES(xyDataSrc)
-    if len(xyData) < LEN_INT * 2:
-        return False, 0, 0, ""
-    (xyid, packlen, ) = struct.unpack('ii', xyData[0 : LEN_INT * 2])
+    if len(xyData) < LEN_HAND:
+        return False, 0, 0, 0, 0, ""
+    (packlen, appid, numid, xyid, ) = struct.unpack('HHII', xyData[0 : LEN_HAND])
     if xyid <= 0 or packlen <= 0:
-        return False, xyid, packlen, ""
-    return True,xyid,packlen,xyData
+        return False, packlen, appid, numid, xyid, ""
+    return True,packlen, appid, numid, xyid, xyData
 
 def getPackLen(data):
     if len(data) < LEN_INT:
         return 0
-    (packlen, ) = struct.unpack("i", data[0 : LEN_INT])
+    (packlen, ) = struct.unpack("I", data[0 : LEN_SHORT])
     return packlen
 
 def getMSTime():

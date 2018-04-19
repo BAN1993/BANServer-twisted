@@ -26,15 +26,17 @@ class Player:
 
     def recvData(self,data):
         self.__recvBuf += data
-        packlen = Base.getPackLen(self.__recvBuf)
-        if packlen <= 0:
-            return
-        if packlen + Base.LEN_INT > len(self.__recvBuf):
-            return
-        data = self.__recvBuf[0: packlen + Base.LEN_INT]
-        self.__recvBuf = self.__recvBuf[packlen + Base.LEN_INT:]
-        ret, xyid, packlen, buf = Base.getXYHand(data)
-        if ret:
+        while True:
+            packlen = Base.getPackLen(self.__recvBuf)
+            if packlen <= 0:
+                return
+            if packlen + Base.LEN_INT > len(self.__recvBuf):
+                return
+            data = self.__recvBuf[0: packlen + Base.LEN_INT]
+            self.__recvBuf = self.__recvBuf[packlen + Base.LEN_INT:]
+            ret, packlen, appid, numid, xyid, buf = Base.getXYHand(data)
+            if ret == False :
+                continue
             self.selectProtocol(xyid, buf[0: packlen])
 
     def sendData(self,data):
