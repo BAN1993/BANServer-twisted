@@ -1,3 +1,4 @@
+#encoding:utf-8
 
 import logging
 import sys
@@ -6,7 +7,6 @@ sys.path.append("../base")
 import Base
 import Player
 import ProtocolSRS
-import ProtocolGAME
 
 
 class PlayerManager(object):
@@ -64,21 +64,25 @@ class PlayerManager(object):
                 packlen = Base.getPackLen(self.m_svrDataList[conn])
                 if packlen <= 0:
                     return
-                if packlen + Base.LEN_INT > len(self.m_svrDataList[conn]):
+                if packlen + Base.LEN_SHORT > len(self.m_svrDataList[conn]):
                     return
 
-                data = self.m_svrDataList[conn][0: packlen + Base.LEN_INT]
-                self.m_svrDataList[conn] = self.m_svrDataList[conn][packlen + Base.LEN_INT:]
-                ret, packlen, appid, numid, xyid, buf = Base.getXYHand(data)
-                if ret == False:
-                    continue
-                self.selectProtocol(xyid, buf[0: packlen])
+                data = self.m_svrDataList[conn][0: packlen + Base.LEN_SHORT]
+                self.m_svrDataList[conn] = self.m_svrDataList[conn][packlen + Base.LEN_SHORT:]
+                self.selectProtocol(data)
         else:
             logging.error("no data list")
 
-    def selectProtocol(self,xyid,data):
-        if xyid == ProtocolGAME.XYID_GAME_RESP_LOGIN:
-            mpc = ProtocolGAME.RespLogin()
+    def selectProtocol(self,buf):
+        #现在appid还没用,后面多个服务时会用到
+        ret, packlen, appid, numid, xyid, data = Base.getXYHand(buf)
+        if not ret:
+            logging.warning("getXYHand error")
+            return
+        logging.debug("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen,appid,numid,xyid))
+        #处理特殊逻辑用
+        if xyid == ProtocolSRS.XYID_SRS_RESP_LOGIN :
+            mpc = ProtocolSRS.RespLogin()
             ret = mpc.make(data)
             logging.debug("connid=%d,flag=%d,numid=%d" % (mpc.connid, mpc.flag, mpc.numid))
 
@@ -93,31 +97,20 @@ class PlayerManager(object):
                 pl.setPlayerData(mpc.numid)
                 self.m_playerList[mpc.numid] = pl
                 del self.m_unAuthList[mpc.connid]
+                logging.info("add new player,numid=%d" % mpc.numid)
             else:
                 logging.warning("login err,connid=%d,flag=%d,numid=%d" % (mpc.connid, mpc.flag, mpc.numid))
 
-            resp = ProtocolSRS.RespLogin()
-            resp.numid = mpc.numid
-            resp.flag = mpc.flag
-            buf = resp.pack()
+            #原样下发
             pl.sendData(buf)
 
-        elif xyid == ProtocolGAME.XYID_GAME_RESP_GOLD:
-            mpc = ProtocolGAME.RespGold()
-            ret = mpc.make(data)
-            logging.debug("numid=%d,gold=%Ld" % (mpc.numid, mpc.gold))
-
-            if self.m_playerList.has_key(mpc.numid):
-                resp = ProtocolSRS.RespGold()
-                resp.numid = mpc.numid
-                resp.gold = mpc.gold
-                buf = resp.pack()
-                self.m_playerList[mpc.numid].sendData(buf)
-            else:
-                logging.warning("can not find in player list,numid=%d" % mpc.numid)
-
         else:
-            logging.warning("unknown xy,xyid=%d" % xyid)
+            if self.m_playerList.has_key(numid):
+                pl = self.m_playerList[numid]
+                pl.sendData(buf)
+            else:
+                logging.warning("have no user numid=%d" % numid)
+
 
 
 

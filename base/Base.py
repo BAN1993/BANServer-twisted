@@ -4,6 +4,8 @@ import time
 import struct
 import logging
 
+from CryptManager import gCrypt
+
 """
 # Protocol Hand
 # buflen    2   H   unsigned short
@@ -11,8 +13,6 @@ import logging
 # numid     4   I   unsigned int
 # xyid      4   I   unsigned int
 """
-
-from CryptManager import gCrypt
 
 LEN_HAND = 12
 LEN_SHORT = 2
@@ -36,6 +36,7 @@ class dbException(RuntimeError):
         self.msg = arg
 
 class protocolBase(object):
+    """协议基类,提供打包和解析等接口"""
     bs_nowindex = 0
     bs_buf = ""
 
@@ -46,6 +47,7 @@ class protocolBase(object):
     # Make
     #------------------------------------------------------------------------------------------------------------------------
     def makeBegin(self, buf):
+        """开始解析"""
         self.bs_nowindex = 0
         self.bs_buf = buf
 
@@ -67,17 +69,20 @@ class protocolBase(object):
     # Pack
     # ------------------------------------------------------------------------------------------------------------------------
     def replaceHand(self):
+        """自动替换包头：buflen"""
         strlen = len(self.bs_buf)
         lenbuf = struct.pack("H",strlen)
-        for i in range(3,4):
-            self.bs_buf = self.bs_buf[:i] + lenbuf[i-3] + self.bs_buf[(i+1):]
+        for i in range(0,1):
+            self.bs_buf = self.bs_buf[:i] + lenbuf[i] + self.bs_buf[(i+1):]
 
     def setHand(self,appid=0,numid=0):
+        """替换包头：appid，numid"""
         setbuf = struct.pack("HI",appid,numid)
         for i in range(5,10):
             self.bs_buf = self.bs_buf[:i] + setbuf[i-5] + self.bs_buf[(i+1):]
 
     def packBegin(self,xyid):
+        """已知协议:开始打包"""
         self.bs_nowindex = 0
         self.bs_buf = struct.pack("HHII", 0,0,0,xyid)
 
@@ -91,12 +96,20 @@ class protocolBase(object):
         self.bs_buf = self.bs_buf + struct.pack("i" + str(strlen) + "s", strlen, src)
 
     def packEnd(self):
+        """已知协议:打包结束"""
         self.replaceHand()
         cryptBuf = gCrypt.encryptAES(self.bs_buf)
         buflen = len(cryptBuf)
         lenbytes = struct.pack("I", buflen)
         cryptBuf = lenbytes[0 : 2] + cryptBuf
         return cryptBuf
+
+    def packUnknown(self,appid,numid,xyid,data):
+        """打包未知协议"""
+        self.bs_buf = struct.pack("HHII",0,appid,numid,xyid)
+        self.bs_buf = self.bs_buf + data
+        return self.packEnd()
+
 
 def getEnum(**enums):
     return type('Enum', (), enums)
@@ -111,9 +124,10 @@ def getBytesIndex(data, begin, strlen):
     return ' '.join(['0x%x' % ord(data[x]) for x in range(begin, begin + strlen)])
 
 def getXYHand(data):
+    """解密并获取包头,包体"""
     if len(data)<LEN_HAND:
         return False, 0, 0, 0, 0, ""
-    (alllen,) = struct.unpack("I", data[0 : LEN_SHORT] )
+    (alllen,) = struct.unpack("H", data[0 : LEN_SHORT] )
     if len(data) < alllen + LEN_SHORT:
         return False, 0, 0, 0, 0, ""
     xyDataSrc = data[LEN_SHORT : alllen + LEN_SHORT]
@@ -123,15 +137,17 @@ def getXYHand(data):
     (packlen, appid, numid, xyid, ) = struct.unpack('HHII', xyData[0 : LEN_HAND])
     if xyid <= 0 or packlen <= 0:
         return False, packlen, appid, numid, xyid, ""
-    return True,packlen, appid, numid, xyid, xyData
+    return True,packlen, appid, numid, xyid, xyData[LEN_HAND:]
 
 def getPackLen(data):
+    """获取未解密前包长"""
     if len(data) < LEN_INT:
         return 0
-    (packlen, ) = struct.unpack("I", data[0 : LEN_SHORT])
+    (packlen, ) = struct.unpack("H", data[0 : LEN_SHORT])
     return packlen
 
 def getMSTime():
+    """获取毫秒"""
     now = time.time()
     return int(round(now * 1000))
 

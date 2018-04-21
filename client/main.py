@@ -27,34 +27,40 @@ class client:
 
     def recvFromServer(self,conn, data):
         self.__recvBuf += data
-        packlen = Base.getPackLen(self.__recvBuf)
-        if packlen <= 0:
-            return
-        if packlen + Base.LEN_INT > len(self.__recvBuf):
-            return
-        data = self.__recvBuf[0: packlen + Base.LEN_INT]
-        self.__recvBuf = self.__recvBuf[packlen + Base.LEN_INT:]
-        ret, packlen, appid, numid, xyid, buf = Base.getXYHand(data)
-        if xyid == ProtocolSRS.XYID_SRS_RESP_CONNECT:
-            # print Base.getBytes(buf)
-            resp = ProtocolSRS.RespConnect()
-            resp.make(buf[0:packlen])
-            print "connid=%d" % (resp.connid)
+        while True:
+            packlen = Base.getPackLen(self.__recvBuf)
+            if packlen <= 0:
+                return
+            if packlen + Base.LEN_SHORT > len(self.__recvBuf):
+                return
+            data = self.__recvBuf[0: packlen + Base.LEN_SHORT]
+            self.__recvBuf = self.__recvBuf[packlen + Base.LEN_SHORT:]
+            ret, packlen, appid, numid, xyid, buf = Base.getXYHand(data)
+            if ret == False:
+                print("getXYHand error")
+                continue
+            print("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen,appid,numid,xyid))
+            if xyid == ProtocolSRS.XYID_SRS_RESP_CONNECT:
+                # print Base.getBytes(buf)
+                resp = ProtocolSRS.RespConnect()
+                resp.make(buf[0:packlen])
+                print "connid=%d" % (resp.connid)
 
-            req = ProtocolSRS.ReqLogin()
-            req.connid = resp.connid
-            req.numid = 1
-            req.userid = "test3003"
-            req.password = "123456"
-            sendbuf = req.pack()
-            self.m_conn.sendData(sendbuf)
-        elif xyid == ProtocolSRS.XYID_SRS_RESP_LOGIN:
-            resp = ProtocolSRS.RespLogin()
-            resp.make(buf[0:packlen])
-            print "flag=%d,numid=%d" % (resp.flag,resp.numid)
-            if resp.flag != resp.FLAG.SUCCESS:
-                from twisted.internet import reactor
-                reactor.stop()
+                req = ProtocolSRS.ReqLogin()
+                req.connid = resp.connid
+                req.numid = 1
+                req.userid = "test3003"
+                req.password = "123456"
+                sendbuf = req.pack()
+                print "send login:numid=%d,userid=%s" % (req.numid,req.userid)
+                self.m_conn.sendData(sendbuf)
+            elif xyid == ProtocolSRS.XYID_SRS_RESP_LOGIN:
+                resp = ProtocolSRS.RespLogin()
+                resp.make(buf[0:packlen])
+                print "recv respLogin:flag=%d,numid=%d" % (resp.flag,resp.numid)
+                if resp.flag != resp.FLAG.SUCCESS:
+                    from twisted.internet import reactor
+                    reactor.stop()
 
 if __name__ == '__main__':
     gCrypt.setAESKey("SocketRouterSvr")

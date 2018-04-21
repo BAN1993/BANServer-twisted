@@ -19,7 +19,7 @@ class RespConnect(Base.protocolBase):
 
     def make(self, data):
         try:
-            self.makeBegin(data[8:])
+            self.makeBegin(data)
             self.connid = self.getInt()
         except Base.protocolException, e:
             logging.error("RespConnect err,msg=" + e.msg)
@@ -39,7 +39,7 @@ class ReqLogin(Base.protocolBase):
 
     def make(self, data):
         try:
-            self.makeBegin(data[8:])
+            self.makeBegin(data)
             self.connid = self.getInt()
             self.numid = self.getInt()
             self.userid = self.getStr()
@@ -62,12 +62,14 @@ class RespLogin(Base.protocolBase):
                         NOUSER=1,
                         PWDERR=2,
                         DBERR=3)
+    connid = 0
     flag = 0
     numid = 0
 
     def make(self, data):
         try:
-            self.makeBegin(data[8:])
+            self.makeBegin(data)
+            self.connid = self.getInt()
             self.flag = self.getInt()
             self.numid = self.getInt()
         except Base.protocolException, e:
@@ -77,6 +79,7 @@ class RespLogin(Base.protocolBase):
 
     def pack(self):
         self.packBegin(XYID_SRS_RESP_LOGIN)
+        self.packInt(self.connid)
         self.packInt(self.flag)
         self.packInt(self.numid)
         return self.packEnd()
@@ -87,7 +90,7 @@ class ReqRegister(Base.protocolBase):
 
     def make(self, data):
         try:
-            self.makeBegin(data[8:])
+            self.makeBegin(data)
             self.userid = self.getStr()
             self.password = self.getStr()
         except Base.protocolException, e:
@@ -111,7 +114,7 @@ class RespRegister(Base.protocolBase):
 
     def make(self, data):
         try:
-            self.makeBegin(data[8:])
+            self.makeBegin(data)
             self.flag = self.getInt()
             self.numid = self.getInt()
         except Base.protocolException, e:
@@ -130,7 +133,7 @@ class ReqQuit(Base.protocolBase):
 
     def make(self, data):
         try:
-            self.makeBegin(data[8:])
+            self.makeBegin(data)
             self.msg = self.getStr()
         except Base.protocolException, e:
             logging.error("doQuit err,msg=" + e.msg)
@@ -157,7 +160,7 @@ class ReqGold(Base.protocolBase):
 
     def make(self, data):
         try:
-            self.makeBegin(data[8:])
+            self.makeBegin(data)
             self.numid = self.getInt()
         except Base.protocolException, e:
             logging.error("ReqGold err,msg=" + e.msg)
@@ -175,7 +178,7 @@ class RespGold(Base.protocolBase):
 
     def make(self, data):
         try:
-            self.makeBegin(data[8:])
+            self.makeBegin(data)
             self.numid = self.getInt()
             self.gold = self.getInt()
         except Base.protocolException, e:
