@@ -39,7 +39,7 @@ class Server(object):
             reactor.stop()
 
     def newClient(self,conn):
-        logging.info("conn ip=%s" % (conn.transport.hostname))
+        logging.info("conn ip=%s" % conn.transport.hostname)
         self.m_svrDataList[conn] = ""
 
     def recvFromClient(self,conn,data):
@@ -60,6 +60,8 @@ class Server(object):
 
     def loseClient(self,conn):
         logging.info("conn ip=%s" % (conn.transport.hostname))
+        if self.m_svrDataList.has_key(conn):
+            del self.m_svrDataList[conn]
 
     def selectProtocol(self,conn,buf):
         ret, packlen, appid, numid, xyid, data = Base.getXYHand(buf)

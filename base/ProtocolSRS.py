@@ -1,8 +1,8 @@
+#encoding:utf-8
+
 import logging
 
 import Base
-
-HANLEN = 8
 
 XYID_SRS_RESP_CONNECT = Base.XYID_SRS_BEGIN + 1 # 10002
 XYID_SRS_REQ_LOGIN = Base.XYID_SRS_BEGIN + 2

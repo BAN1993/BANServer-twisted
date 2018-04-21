@@ -18,6 +18,8 @@ LEN_HAND = 12
 LEN_SHORT = 2
 LEN_INT = 4
 
+XYID_CFG_BEGIN  = 101
+XYID_CFG_END    = 201
 XYID_SRS_BEGIN  = 10001
 XYID_SRS_END    = 20000
 XYID_GAME_BEGIN = 20001
@@ -58,6 +60,13 @@ class protocolBase(object):
         self.bs_nowindex += LEN_INT
         return ret
 
+    def getUShort(self):
+        if len(self.bs_buf) < self.bs_nowindex + LEN_SHORT:
+            raise protocolException("data len err,datalen=" + str(len(self.bs_buf)) + ",aimlen=" + str(self.bs_nowindex + LEN_SHORT))
+        (ret,) = struct.unpack('H', self.bs_buf[self.bs_nowindex : self.bs_nowindex + LEN_SHORT])
+        self.bs_nowindex += LEN_SHORT
+        return ret
+
     def getStr(self):
         strlen = self.getInt()
         if len(self.bs_buf) < self.bs_nowindex + strlen:
@@ -89,6 +98,10 @@ class protocolBase(object):
     def packInt(self,num):
         num = int(num)
         self.bs_buf = self.bs_buf + struct.pack("i", num)
+
+    def packUShort(self,num):
+        num = int(num)
+        self.bs_buf = self.bs_buf + struct.pack("H",num)
 
     def packStr(self,src):
         src = str(src)
