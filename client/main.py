@@ -36,27 +36,26 @@ class client:
             data = self.__recvBuf[0: packlen + Base.LEN_SHORT]
             self.__recvBuf = self.__recvBuf[packlen + Base.LEN_SHORT:]
             ret, packlen, appid, numid, xyid, buf = Base.getXYHand(data)
-            if ret == False:
+            if not ret:
                 print("getXYHand error")
                 continue
             print("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen,appid,numid,xyid))
             if xyid == ProtocolSRS.XYID_SRS_RESP_CONNECT:
                 # print Base.getBytes(buf)
                 resp = ProtocolSRS.RespConnect()
-                resp.make(buf[0:packlen])
+                resp.make(buf)
                 print "connid=%d" % (resp.connid)
 
                 req = ProtocolSRS.ReqLogin()
                 req.connid = resp.connid
-                req.numid = 1
                 req.userid = "test3003"
                 req.password = "123456"
                 sendbuf = req.pack()
-                print "send login:numid=%d,userid=%s" % (req.numid,req.userid)
+                print "send login:userid=%s" % (req.userid)
                 self.m_conn.sendData(sendbuf)
             elif xyid == ProtocolSRS.XYID_SRS_RESP_LOGIN:
                 resp = ProtocolSRS.RespLogin()
-                resp.make(buf[0:packlen])
+                resp.make(buf)
                 print "recv respLogin:flag=%d,numid=%d" % (resp.flag,resp.numid)
                 if resp.flag != resp.FLAG.SUCCESS:
                     from twisted.internet import reactor

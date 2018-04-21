@@ -70,7 +70,7 @@ class Server(object):
         if xyid == ProtocolSRS.XYID_SRS_REQ_LOGIN:
             req = ProtocolSRS.ReqLogin()
             ret = req.make(data)
-            logging.info("ReqLogin:connid=%d,numid=%d,userid=%s,pwd=%s" % (req.connid,req.numid, req.userid, req.password))
+            logging.info("ReqLogin:connid=%d,userid=%s,pwd=%s" % (req.connid, req.userid, req.password))
 
             resp = ProtocolSRS.RespLogin()
             resp.connid = req.connid
@@ -82,15 +82,15 @@ class Server(object):
                 logging.error("select ret err,sql=%s" % sql)
             elif row <= 0:
                 resp.flag = resp.FLAG.NOUSER
-                logging.info("numid=%d,userid=%s select no data" % (req.numid, req.userid))
+                logging.info("userid=%s select no data" % req.userid)
             else:
                 if str(rslt[0][1]) == req.password:
                     resp.flag = resp.FLAG.SUCCESS
                     resp.numid = int(rslt[0][0])
-                    logging.info("numid=%d,userid=%s login success" % (req.numid, req.userid))
+                    logging.info("userid=%s login success,numid=%d" % (req.userid,resp.numid))
                 else:
                     resp.flag = resp.FLAG.PWDERR
-                    logging.info("numid=%d,userid=%s pwd err" % (req.numid, req.userid))
+                    logging.info("userid=%s pwd err" % req.userid)
 
             buf = resp.pack()
             conn.transport.write(buf)
