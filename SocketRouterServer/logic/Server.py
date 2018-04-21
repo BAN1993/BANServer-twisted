@@ -24,8 +24,8 @@ class Server(object):
 
     def init(self,conf):
         self.m_port = int(conf.get("serverConfig", "port"))
-        self.m_gameSvrHost = str(conf.get("GameServer", "host"))
-        self.m_gameSvrPort = int(conf.get("GameServer", "port"))
+        self.m_gameSvrHost = str(conf.get("CenterServer", "host"))
+        self.m_gameSvrPort = int(conf.get("CenterServer", "port"))
         logging.info("svrport=%d,gshost=%s,gspost=%d" % (self.m_port, self.m_gameSvrHost, self.m_gameSvrPort))
         self.m_connectorServer = ConnectorServer.ConnectorServer(self, self.m_port)
         self.m_gameServer = ConnectorClient.ConnectorClient(self, self.m_gameSvrHost, self.m_gameSvrPort)
