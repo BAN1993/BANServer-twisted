@@ -1,7 +1,6 @@
 
-from twisted.internet.protocol import ClientFactory, Protocol
-#from twisted.internet import reactor
 import logging
+from twisted.internet.protocol import ClientFactory, Protocol
 
 class ConnectClientProtocl(Protocol):
 

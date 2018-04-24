@@ -1,5 +1,5 @@
 
-#from twisted.internet.protocol import Factory
+import logging
 from twisted.internet.protocol import ServerFactory, Protocol
 
 class ConnectServerProtocl(Protocol):
@@ -35,5 +35,6 @@ class ConnectorServer(object):
         self.m_factory = ConnectServerFactory(server)
 
     def begin(self):
+        logging.info("begin listen:%d" % self.m_port)
         from twisted.internet import reactor
         reactor.listenTCP(self.m_port, self.m_factory)
