@@ -15,10 +15,13 @@ if __name__ == '__main__':
     conf = ConfigParser.ConfigParser()
     conf.read('config.ini')
 
+    # TODO 为了方便,先写死subtype为1
+    subtype = 1
+
     svr = None
     try:
         svr = Server.Server()
-        svr.init(conf)
+        svr.init(subtype,conf)
         svr.run()
     except BaseException as e:
         logging.exception(e)

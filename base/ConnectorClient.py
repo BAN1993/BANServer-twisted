@@ -1,3 +1,4 @@
+#encoding:utf-8
 
 import logging
 from twisted.internet.protocol import ClientFactory, Protocol
@@ -13,7 +14,9 @@ class ConnectClientProtocl(Protocol):
 
     def connectionLost(self, reason):
         logging.error("lost gameserver,reason=%s" % str(reason))
-        self.factory.reConnect()
+        #重连应该由上层管理
+        #self.factory.reConnect()
+        self.factory.m_client.m_server.lostServer(self)
 
 class ConnectClientFactory(ClientFactory):
 
