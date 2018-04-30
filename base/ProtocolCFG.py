@@ -63,11 +63,13 @@ class RespConnect(Base.protocolBase):
         return self.packEnd()
 
 class ReqConfig(Base.protocolBase):
+    askid = 0
     sqlstr = ""
 
     def make(self,data):
         try:
             self.makeBegin(data)
+            self.askid = self.getInt()
             self.sqlstr = self.getStr()
         except Base.protocolException, e:
             logging.error("ReqConfig err,msg="+e.msg)
@@ -76,15 +78,18 @@ class ReqConfig(Base.protocolBase):
 
     def pack(self):
         self.packBegin(XYID_CFG_REQ_CONFIG)
+        self.packInt(self.askid)
         self.packStr(self.sqlstr)
         return self.packEnd()
 
 class RespConfig(Base.protocolBase):
+    askid = 0
     retstr = ""
 
     def make(self,data):
         try:
             self.makeBegin(data)
+            self.askid = self.getInt()
             self.retstr = self.getStr()
         except Base.protocolException, e:
             logging.error("RespConfig err,msg="+e.msg)
@@ -93,6 +98,7 @@ class RespConfig(Base.protocolBase):
 
     def pack(self):
         self.packBegin(XYID_CFG_RESP_CONFIG)
+        self.packInt(self.askid)
         self.packStr(self.retstr)
         return self.packEnd()
 
@@ -101,12 +107,14 @@ class RespConfigFinish(Base.protocolBase):
                         DBERR=1,
                         NOCONFIG=2,
                         BAN=3)
+    askid = 0
     flag = 0
     count = 0
 
     def make(self,data):
         try:
             self.makeBegin(data)
+            self.askid = self.getInt()
             self.flag = self.getInt()
             self.count = self.getInt()
         except Base.protocolException, e:
@@ -116,6 +124,7 @@ class RespConfigFinish(Base.protocolBase):
 
     def pack(self):
         self.packBegin(XYID_CFG_RESP_CONFIGFINISH)
+        self.packInt(self.askid)
         self.packInt(self.flag)
         self.packInt(self.count)
         return self.packEnd()

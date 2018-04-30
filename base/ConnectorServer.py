@@ -30,11 +30,11 @@ class ConnectorServer(object):
     m_port = 0
     m_factory = None
 
-    def __init__(self,server,port):
-        self.m_port = port
+    def __init__(self,server):
         self.m_factory = ConnectServerFactory(server)
 
-    def begin(self):
+    def begin(self,port):
+        self.m_port = port
         logging.info("begin listen:%d" % self.m_port)
         from twisted.internet import reactor
         reactor.listenTCP(self.m_port, self.m_factory)

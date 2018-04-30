@@ -6,6 +6,7 @@ sys.path.append("../base")
 
 import Base
 import ConnectorServer
+import ConfigClient
 import ProtocolSRS
 from CryptManager import gCrypt
 from DBManager import gDBManager
@@ -14,28 +15,51 @@ class Server(object):
 
     m_isRunning = False
 
+    m_config = None
+
     m_port = 0
     m_connectorServer = None
     m_svrDataList = {} # [client conn] = ""
 
-    def init(self,conf):
-        self.m_port = int(conf.get("serverConfig", "port"))
-        logging.info("svrport=%d" % self.m_port)
-        self.m_connectorServer = ConnectorServer.ConnectorServer(self, self.m_port)
+    def init(self, subtype, conf):
+        cfgip = str(conf.get("configsvr", "host"))
+        cfgport = int(conf.get("configsvr", "port"))
+        self.m_config = ConfigClient.ConfigClent(self,subtype,Base.SVR_TYPE_CENTER,cfgip,cfgport)
+
+        self.m_connectorServer = ConnectorServer.ConnectorServer(self)
 
         gCrypt.init(conf)
-        gDBManager.init(conf)
+        #gDBManager.init(conf)
 
     def run(self):
-        self.m_connectorServer.begin()
+        self.m_config.connect(self.configCallBack)
 
+        # 要放在最后一步
         from twisted.internet import reactor
         self.m_isRunning = True
+        logging.info("reactor run")
         reactor.run()
+
+    def configCallBack(self,flag):
+        if flag:
+            configstr = self.m_config.getConfig()
+            configstr = "{" + configstr + "}"
+            tab = eval(configstr)
+            if tab.has_key('dbip') and tab.has_key('dbport') and tab.has_key('dbuser') and tab.has_key('dbpwd') and tab.has_key('dbname'):
+                gDBManager.init(tab['dbip'],tab['dbport'],tab['dbuser'],tab['dbpwd'],tab['dbname'])
+            else:
+                logging.error("db config error")
+                self.stop()
+                return
+            self.m_connectorServer.begin(self.m_config.getPort())
+        else:
+            logging.error("connect config error and return")
+            self.stop()
 
     def stop(self):
         if self.m_isRunning :
             from twisted.internet import reactor
+            self.m_isRunning = False
             reactor.stop()
 
     def newClient(self,conn):

@@ -21,13 +21,20 @@ class Server(object):
     def init(self, conf):
         self.m_port = int(conf.get("serverConfig", "port"))
         logging.info("svrport=%d" % self.m_port)
-        self.m_connectorServer = ConnectorServer.ConnectorServer(self, self.m_port)
+        self.m_connectorServer = ConnectorServer.ConnectorServer(self)
 
         gCrypt.init(conf)
-        gDBManager.init(conf)
+
+        dbip = str(conf.get("dbConfig", "ip"))
+        dbport = int(conf.get("dbConfig", "port"))
+        dbuser = str(conf.get("dbConfig", "user"))
+        dbpwd = str(conf.get("dbConfig", "pwd"))
+        datatable = str(conf.get("dbConfig", "database"))
+        dbcharset = str(conf.get("dbConfig", "charset"))
+        gDBManager.init(dbip,dbport,dbuser,dbpwd,datatable,dbcharset)
 
     def run(self):
-        self.m_connectorServer.begin()
+        self.m_connectorServer.begin(self.m_port)
 
         from twisted.internet import reactor
         self.m_isRunning = True
@@ -46,6 +53,8 @@ class Server(object):
         logging.info("conn ip=%s" % conn.transport.hostname)
         if self.m_svrDataList.has_key(conn):
             del self.m_svrDataList[conn]
+        if self.m_svrList.has_key(conn.m_numid):
+            del self.m_svrList[conn.m_numid]
 
     def recvFromClient(self, conn, data):
         if self.m_svrDataList.has_key(conn):
@@ -80,7 +89,7 @@ class Server(object):
             appid = 0
             port = 0
             config = ""
-            sql = "select A.appid,A.port,A.config from config_svr A,config_routing_table B where A.subtype=%d and A.svrtype=%d and B.ip='%s' and A.svrid=B.id" % (req.subtype,req.svrtype,conn.transport.hostname)
+            sql = "select A.id,A.port,A.config from config_svr A,config_routing_table B where A.subtype=%d and A.svrtype=%d and B.ip='%s' and A.svrid=B.id" % (req.subtype,req.svrtype,conn.transport.hostname)
             ret, row, rslt = gDBManager.select(sql)
             if not ret:
                 resp.flag = resp.FLAG.DBERR
@@ -90,7 +99,7 @@ class Server(object):
                 return
             elif row <= 0:
                 resp.flag = resp.FLAG.NOCONFIG
-                logging.info("userid=%s select no data" % req.userid)
+                logging.info("select no data,sql=%s" % sql)
                 buf = resp.pack()
                 conn.transport.write(buf)
                 return
@@ -133,6 +142,7 @@ class Server(object):
             logging.info("ReqConfig:sql=%s" % req.sqlstr)
 
             respFinish = ProtocolCFG.RespConfigFinish()
+            respFinish.askid = req.askid
 
             if not self.m_svrList.has_key(conn.m_numid):
                 logging.warning("conn is not in svrlist,sql=%s" % req.sqlstr)
@@ -158,7 +168,9 @@ class Server(object):
                 resp = ProtocolCFG.RespConfig()
                 for i in range(len(rslt)):
                     respFinish.count += 1
-                    resp.retstr = rslt[i]
+                    resp.askid = req.askid
+                    logging.debug("type=%s,ret=%s" % (type(rslt[i][0]),rslt[i][0]))
+                    resp.retstr = rslt[i][0]
                     buf = resp.pack()
                     conn.transport.write(buf)
 

@@ -16,14 +16,14 @@ class DBManager(object):
     reNowCount = 0 #距离上次ping的时间
     reConnTime = 60 # 60秒自动连接一次db
 
-    def init(self, conf):
+    def init(self, ip,port,user="root",pwd="123456",database="py_test",charset="utf8"):
         try:
-            self.m_ip           = str(conf.get("dbConfig", "ip"))
-            self.m_port         = int(conf.get("dbConfig", "port"))
-            self.m_user         = str(conf.get("dbConfig", "user"))
-            self.m_pwd          = str(conf.get("dbConfig", "pwd"))
-            self.m_datatable    = str(conf.get("dbConfig", "database"))
-            self.m_charset      = str(conf.get("dbConfig", "charset"))
+            self.m_ip           = ip
+            self.m_port         = port
+            self.m_user         = user
+            self.m_pwd          = pwd
+            self.m_datatable    = database
+            self.m_charset      = charset
             logging.info("ip=%s,port=%d,user=%s,pwd=%s,database=%s,charset=%s" % (self.m_ip, self.m_port, self.m_user, self.m_pwd, self.m_datatable, self.m_charset))
             self.dbConn = MySQLdb.Connect(host = self.m_ip,
                                           port = self.m_port,

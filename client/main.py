@@ -10,15 +10,20 @@ import ConnectorClient
 
 class client:
 
+    m_host = ""
+    m_port = 0
+
     m_conn = None
     __recvBuf = ""
 
     def __init__(self,host,port):
-        self.m_conn = ConnectorClient.ConnectorClient(self, host, port)
+        self.m_host = host
+        self.m_port = port
+        self.m_conn = ConnectorClient.ConnectorClient(self)
         self.m_conn.setReconnect(False)
 
     def run(self):
-        self.m_conn.connect()
+        self.m_conn.connect(self.m_host,self.m_port)
         from twisted.internet import reactor
         reactor.run()
 

@@ -23,7 +23,12 @@ class ConfigClent:
 
     __recvData = ""
 
+    __askid = 0
+    __reqCallback = {} # [askid]=callback
+    __reqRetStr = {} # [askid]=[retstr]
+
     m_appid = 0
+    m_port = 0
     m_config = ""
 
     def __init__(self,server,subtype,svrtype,cfgip,cfgport):
@@ -35,8 +40,33 @@ class ConfigClent:
 
     def connect(self,callback):
         """callback(bool flag)"""
-        self.m_conn = ConnectorClient.ConnectorClient(self, self.m_cfgIp, self.m_cfgPort)
+        logging.info("begin connect configsvr,ip=%s,port=%d" % (self.m_cfgIp,self.m_cfgPort))
+        self.m_conn = ConnectorClient.ConnectorClient(self)
+        self.m_conn.connect(self.m_cfgIp, self.m_cfgPort)
         self.m_connectCallback = callback
+
+    def getPort(self):
+        return self.m_port
+
+    def getAppid(self):
+        return self.m_appid
+
+    def getConfig(self):
+        return self.m_config
+
+    def GetConfigBySql(self,sqlstr,callback):
+        """callback(bool flag, table {configstr})"""
+        self.__askid += 1
+
+        req = ProtocolCFG.ReqConfig()
+        req.askid = self.__askid
+        req.sqlstr = sqlstr
+        buf = req.pack()
+        self.m_conn.sendData(buf)
+
+        self.__reqCallback[req.askid] = callback
+        self.__reqRetStr[req.askid] = []
+
 
     def newServer(self, conn):
         logging.info("connect configsvr success")
@@ -51,7 +81,12 @@ class ConfigClent:
     def lostServer(self,conn):
         logging.warn("lost configsvr and try connect")
         self.m_isConnected = False
+        self.noticeAllCallBackFail()
         self.m_conn.reConnect()
+
+    def noticeAllCallBackFail(self):
+        #todo
+        pass
 
     def recvFromServer(self,conn,data):
         self.__recvData += data
@@ -63,7 +98,7 @@ class ConfigClent:
                 return
 
             data = self.__recvData[0: packlen + Base.LEN_SHORT]
-            self.__recvData = self.__recvData[conn][packlen + Base.LEN_SHORT:]
+            self.__recvData = self.__recvData[packlen + Base.LEN_SHORT:]
             self.selectProtocol(data)
 
     def selectProtocol(self,buf):
@@ -76,13 +111,31 @@ class ConfigClent:
         if xyid == ProtocolCFG.XYID_CFG_RESP_CONNECT:
             resp = ProtocolCFG.RespConnect()
             ret = resp.make(data)
-            logging.info("flag=%d,appid=%d,config=%d" % (resp.flag,resp.appid,resp.config))
+            logging.info("flag=%d,appid=%d,port=%d,config=%s" % (resp.flag,resp.appid,resp.port,resp.config))
             callbackflag = True
             if resp.flag == resp.FLAG.SUCCESS:
                 self.m_isInited = True
                 self.m_appid = resp.appid
+                self.m_port = resp.port
                 self.m_config = resp.config
             else:
                 logging.error("connect configsvr failed,flag=%d" % resp.flag)
                 callbackflag = False
             self.m_connectCallback(callbackflag)
+
+        elif xyid == ProtocolCFG.XYID_CFG_RESP_CONFIG:
+            resp = ProtocolCFG.RespConfig()
+            ret = resp.make(data)
+            logging.debug("askid=%d,retstr=%s" % (resp.askid,resp.retstr))
+            self.__reqRetStr[resp.askid].append(resp.retstr)
+
+        elif xyid == ProtocolCFG.XYID_CFG_RESP_CONFIGFINISH:
+            resp = ProtocolCFG.RespConfigFinish()
+            ret = resp.make(data)
+            logging.debug("askid=%d,flag=%d,count=%d" % (resp.askid,resp.flag,resp.count))
+            if resp.flag == resp.FLAG.SUCCESS:
+                self.__reqCallback[resp.askid](True,self.__reqRetStr[resp.askid])
+            else:
+                self.__reqCallback[resp.askid](False,[])
+            del self.__reqCallback[resp.askid]
+            del self.__reqRetStr[resp.askid]
