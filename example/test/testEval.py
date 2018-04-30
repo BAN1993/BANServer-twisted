@@ -1,4 +1,4 @@
-teststr = "'dbip':'118.25.45.195','dbport':3306,'dbuser':'root','dbpwd':'123456','dbname':'py_test','dbchar':'utf8'"
+teststr = "'dbip':'127.0.01','dbport':3306,'dbuser':'root','dbpwd':'123456','dbname':'py_test','dbchar':'utf8'"
 teststr = "{" + teststr + "}"
 print type(teststr)
 a = eval(teststr)
