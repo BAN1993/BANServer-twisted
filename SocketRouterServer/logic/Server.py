@@ -51,7 +51,6 @@ class Server(object):
 
             sql = "SELECT CONCAT(cast(A.id AS CHAR),'$$$',cast(B.ip AS CHAR),'$$$',cast(A. PORT AS CHAR)) FROM config_svr A,config_routing_table B WHERE A.svrtype = 2 AND A.svrid = B.id"
             self.m_config.GetConfigBySql(sql,self.getGameServerConfigCB)
-
         else:
             logging.error("connect config error and return")
             self.stop()
@@ -70,7 +69,13 @@ class Server(object):
     def stop(self):
         if self.m_isRunning:
             from twisted.internet import reactor
-            reactor.stop()
+            if not reactor._stopped :
+                logging.info("stop reactor")
+                reactor.stop()
+            else:
+                logging.info("try stop ractor,but is stopped")
+        else:
+            logging.info("try stop svr,but is not running")
 
     # Client
     def newClient(self,conn):

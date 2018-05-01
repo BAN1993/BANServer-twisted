@@ -57,10 +57,15 @@ class Server(object):
             self.stop()
 
     def stop(self):
-        if self.m_isRunning :
+        if self.m_isRunning:
             from twisted.internet import reactor
-            self.m_isRunning = False
-            reactor.stop()
+            if not reactor._stopped :
+                logging.info("stop reactor")
+                reactor.stop()
+            else:
+                logging.info("try stop ractor,but is stopped")
+        else:
+            logging.info("try stop svr,but is not running")
 
     def newClient(self,conn):
         logging.info("conn ip=%s" % conn.transport.hostname)

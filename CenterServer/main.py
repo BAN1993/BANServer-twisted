@@ -14,12 +14,13 @@ if __name__ == '__main__':
     conf = ConfigParser.ConfigParser()
     conf.read('config.ini')
 
-    # TODO 为了方便,先写死subtype为1
-    subtype = 1
+    subtype = 1  # 默认为1
+    if len(sys.argv) == 2:
+        subtype = int(sys.argv[1])
+    logging.info("subytype=%d" % subtype)
 
-    svr = None
+    svr = Server.Server()
     try:
-        svr = Server.Server()
         svr.init(subtype,conf)
         svr.run()
 

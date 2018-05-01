@@ -50,7 +50,7 @@ class Server(object):
         self.m_svrDataList[conn] = ""
 
     def loseClient(self,conn):
-        logging.info("conn ip=%s" % conn.transport.hostname)
+        logging.info("conn ip=%s,appid=%d" % (conn.transport.hostname,conn.m_numid))
         if self.m_svrDataList.has_key(conn):
             del self.m_svrDataList[conn]
         if self.m_svrList.has_key(conn.m_numid):
