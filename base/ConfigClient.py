@@ -5,10 +5,11 @@ import sys
 sys.path.append("../base")
 
 import Base
+import ServerInterface
 import ConnectorClient
 import ProtocolCFG
 
-class ConfigClent:
+class ConfigClent(ServerInterface.ClientBase):
 
     m_isConnected = False
     m_isInited = False
@@ -78,10 +79,16 @@ class ConfigClent:
             self.m_conn.sendData(buf)
 
     def lostServer(self,conn):
-        logging.warn("lost configsvr and try connect")
-        self.m_isConnected = False
-        self.noticeAllCallBackFail()
-        self.m_conn.reConnect()
+        if self.m_isInited:
+            #如果已经验证过,则可以重连
+            logging.warn("lost configsvr and try connect")
+            self.m_isConnected = False
+            self.noticeAllCallBackFail()
+            self.m_conn.reConnect()
+        else:
+            #如果没验证过,直接停止服务
+            logging.error("can not connect to configsvr and stop")
+            self.m_server.stop()
 
     def noticeAllCallBackFail(self):
         """通知所有回调失败,并清理列表"""
@@ -114,7 +121,7 @@ class ConfigClent:
             logging.warning("getXYHand error")
             return
         logging.debug("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen, appid, numid, xyid))
-        
+
         if xyid == ProtocolCFG.XYID_CFG_RESP_CONNECT:
             resp = ProtocolCFG.RespConnect()
             ret = resp.make(data)

@@ -14,8 +14,6 @@ class ConnectClientProtocl(Protocol):
 
     def connectionLost(self, reason):
         logging.error("lost svr,reason=%s" % str(reason))
-        #重连应该由上层管理
-        #self.factory.reConnect()
         self.factory.m_client.m_server.lostServer(self)
 
 class ConnectClientFactory(ClientFactory):
@@ -28,8 +26,9 @@ class ConnectClientFactory(ClientFactory):
         self.m_client = client
 
     def clientConnectionFailed(self, connector, reason):
-        logging.error("can not connect,connector=%s.reason=%s" % (str(connector),str(reason)))
-        self.reConnect()
+        logging.error("can not connect or lost,connector=%s.reason=%s" % (str(connector),str(reason)))
+        self.m_client.m_server.lostServer(self)
+        #self.reConnect()
 
     def reConnect(self):
         self.m_client.reConnect()

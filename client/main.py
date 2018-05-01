@@ -4,11 +4,12 @@ import sys
 sys.path.append("../base")
 
 import Base
+import ServerInterface
 import ProtocolSRS
 from CryptManager import gCrypt
 import ConnectorClient
 
-class client:
+class client(ServerInterface.ClientBase):
 
     m_host = ""
     m_port = 0
@@ -65,6 +66,11 @@ class client:
                 if resp.flag != resp.FLAG.SUCCESS:
                     from twisted.internet import reactor
                     reactor.stop()
+
+    def lostServer(self,conn):
+        print "lost server"
+        from twisted.internet import reactor
+        reactor.stop()
 
 if __name__ == '__main__':
     gCrypt.setAESKey("SocketRouterSvr")

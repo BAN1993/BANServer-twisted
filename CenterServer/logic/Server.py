@@ -5,13 +5,14 @@ import sys
 sys.path.append("../base")
 
 import Base
+import ServerInterface
 import ConnectorServer
 import ConfigClient
 import ProtocolSRS
 from CryptManager import gCrypt
 from DBManager import gDBManager
 
-class Server(object):
+class Server(ServerInterface.ServerBase):
 
     m_isRunning = False
 

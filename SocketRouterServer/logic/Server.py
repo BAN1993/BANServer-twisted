@@ -5,13 +5,14 @@ import sys
 sys.path.append("../base")
 
 import Base
+import ServerInterface
 import ConnectorServer
 import ConnectorClient
 import ConfigClient
 import PlayerManager
 from CryptManager import gCrypt
 
-class Server(object):
+class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
 
     m_isRunning = False
 
@@ -90,6 +91,10 @@ class Server(object):
     # GameSver
     def newServer(self,conn):
         self.m_playerManager.newServer(conn)
+
+    def lostServer(self,conn):
+        logging.warning("lost server and try connect")
+        self.m_centerClient.reConnect()
 
     def recvFromServer(self,conn,data):
         self.m_playerManager.recvFromServer(conn,data)
