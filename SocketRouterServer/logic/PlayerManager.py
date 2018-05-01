@@ -22,6 +22,9 @@ class PlayerManager(object):
     def __init__(self,server):
         self.m_server = server
 
+    def timer(self):
+        logging.debug("unauth count=%d,player count=%d" % (self.m_unAuthList.__len__(),self.m_playerList.__len__()))
+
     def newClient(self,conn):
         pl = Player.Player(self, conn)
         self.m_connid += 1

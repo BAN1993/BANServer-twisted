@@ -1,8 +1,9 @@
 #encoding:utf-8
 
-import logging
 import sys
 sys.path.append("../base")
+import logging
+from twisted.application.internet import TimerService
 
 import Base
 import ServerInterface
@@ -17,6 +18,7 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
     m_isRunning = False
 
     m_config = None
+    m_timer = None
 
     m_port = 0
     m_connectorServer = None
@@ -37,8 +39,14 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
         self.m_playerManager = PlayerManager.PlayerManager(self)
         gCrypt.init(conf)
 
+    def timer(self):
+        self.m_playerManager.timer()
+
     def run(self):
         self.m_config.connect(self.configCallBack)
+
+        self.m_timer = TimerService(1, self.timer)
+        self.m_timer.startService()
 
         #要放在最后一步
         from twisted.internet import reactor
@@ -68,6 +76,7 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
             self.stop()
 
     def stop(self):
+        self.m_timer.stopService()
         if self.m_isRunning:
             from twisted.internet import reactor
             if not reactor._stopped :

@@ -1,8 +1,9 @@
 #encoding:utf-8
 
-import logging
 import sys
 sys.path.append("../base")
+import logging
+from twisted.application.internet import TimerService
 
 import Base
 import ServerInterface
@@ -17,6 +18,7 @@ class Server(ServerInterface.ServerBase):
     m_isRunning = False
 
     m_config = None
+    m_timer = None
 
     m_port = 0
     m_connectorServer = None
@@ -41,6 +43,9 @@ class Server(ServerInterface.ServerBase):
         logging.info("reactor run")
         reactor.run()
 
+    def timer(self):
+        pass
+
     def configCallBack(self,flag):
         if flag:
             configstr = self.m_config.getConfig()
@@ -53,11 +58,15 @@ class Server(ServerInterface.ServerBase):
                 self.stop()
                 return
             self.m_connectorServer.begin(self.m_config.getPort())
+
+            self.m_timer = TimerService(1, self.timer)
+            self.m_timer.startService()
         else:
             logging.error("connect config error and return")
             self.stop()
 
     def stop(self):
+        self.m_timer.stopService()
         if self.m_isRunning:
             from twisted.internet import reactor
             if not reactor._stopped :
