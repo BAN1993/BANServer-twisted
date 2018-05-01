@@ -55,7 +55,7 @@ class ConfigClent:
         return self.m_config
 
     def GetConfigBySql(self,sqlstr,callback):
-        """callback(bool flag, table {configstr})"""
+        """callback(bool flag, list [configstr])"""
         self.__askid += 1
 
         req = ProtocolCFG.ReqConfig()
@@ -66,7 +66,6 @@ class ConfigClent:
 
         self.__reqCallback[req.askid] = callback
         self.__reqRetStr[req.askid] = []
-
 
     def newServer(self, conn):
         logging.info("connect configsvr success")
@@ -85,10 +84,18 @@ class ConfigClent:
         self.m_conn.reConnect()
 
     def noticeAllCallBackFail(self):
-        #todo
-        pass
+        """通知所有回调失败,并清理列表"""
+        for cb in self.__reqCallback.values():
+            cb(False,[])
+        self.__reqCallback.clear()
+        self.__reqRetStr.clear()
+        self.__recvData = ""
 
     def recvFromServer(self,conn,data):
+        if not self.m_isConnected:
+            logging.error("recv data but is not connnected")
+            return
+
         self.__recvData += data
         while True:
             packlen = Base.getPackLen(self.__recvData)
@@ -107,7 +114,7 @@ class ConfigClent:
             logging.warning("getXYHand error")
             return
         logging.debug("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen, appid, numid, xyid))
-        # 处理特殊逻辑用
+        
         if xyid == ProtocolCFG.XYID_CFG_RESP_CONNECT:
             resp = ProtocolCFG.RespConnect()
             ret = resp.make(data)
