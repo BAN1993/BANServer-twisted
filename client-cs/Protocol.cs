@@ -29,6 +29,31 @@ namespace SocketClient
         private byte[] buf = new byte[2048];
         private List<byte> byteSource = new List<byte>();
 
+        //后面要删掉
+        public static string ByteToHex(byte[] bytes)
+        {
+            string returnStr = "";
+            if (bytes != null)
+            {
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    returnStr += bytes[i].ToString("X2").ToLower();
+                }
+            }
+            return returnStr;
+        }
+
+        public static byte[] HexToByte(string hexString)
+        {
+            hexString = hexString.Replace(" ", "");
+            if ((hexString.Length % 2) != 0)
+                hexString += " ";
+            byte[] returnBytes = new byte[hexString.Length / 2];
+            for (int i = 0; i < returnBytes.Length; i++)
+                returnBytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2).Trim(), 16);
+            return returnBytes;
+        }
+
         public ProtocolBase() 
         {
             this.buflen = 0;
@@ -162,7 +187,7 @@ namespace SocketClient
 
         public void packString(string str)
         {
-            byteSource.AddRange(getFromInt(str.Length));
+            byteSource.AddRange(getFromUShort((ushort)str.Length));
             byteSource.AddRange(getFromString(str));
         }
 
@@ -175,15 +200,17 @@ namespace SocketClient
         {
             this.buf = this.byteSource.ToArray();
             replaceHandLen();
-
             //加密
             Cryptor crypt = Cryptor.getInstance();
             string crystr = "";
             crypt.encryptAES(this.buf, out crystr);
             byte[] len = getFromUShort((ushort)crystr.Length);
-            crystr = len[0] + len[1] + crystr;
-            this.buf = UTF8Encoding.UTF8.GetBytes(crystr);
-
+            byte[] crtbuf = UTF8Encoding.UTF8.GetBytes(crystr);
+            byte[] endbuf = new byte[crtbuf.Length + 2];
+            endbuf[0] = len[0];
+            endbuf[1] = len[1];
+            Array.Copy(crtbuf, 0,endbuf, 2, crtbuf.Length);
+            this.buf = endbuf;
             return this.buf;
         }
 

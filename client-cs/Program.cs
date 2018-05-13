@@ -31,38 +31,41 @@ namespace SocketClient
                 return;
             }
 
-            //先收到RespConnect
-            clientSocket.Receive(result);
-            RespConnect respConnect = new RespConnect();
-            respConnect.make(result);
-            Console.WriteLine("收到:connid=" + respConnect.connid);
-
+            int connid = 0;
             {
-                /*
-                //测试注册
-                ReqRegister pack = new ReqRegister("test05", "123456");
-                byte[] buf = pack.pack();
-                clientSocket.Send(buf);
-                int receiveLength = clientSocket.Receive(result);
-                respRegister resp = new respRegister();
-                resp.make(result);
-                Console.WriteLine("收到消息:flag=" + resp.flag + ",numid=" + resp.numid);
-                */
+                //先收到RespConnect
+                clientSocket.Receive(result);
+                ushort len = System.BitConverter.ToUInt16(result, 0);
+                byte[] packbuf = new byte[len];
+                Array.Copy(result, 2, packbuf, 0, len);
+                string decstr = "";
+                crypt.decryptAES(packbuf, out decstr);
+
+                RespConnect respConnect = new RespConnect();
+                respConnect.make(UTF8Encoding.UTF8.GetBytes(decstr));
+                Console.WriteLine("连接回复:connid=" + respConnect.connid);
+                connid = respConnect.connid;
             }
 
             {
                 //测试登录
-                ReqLogin pack = new ReqLogin(0,"test3003","123456");
+                ReqLogin pack = new ReqLogin(connid, "test3003", "123456");
                 byte[] buf = pack.pack();
                 clientSocket.Send(buf);
+
                 int receiveLength = clientSocket.Receive(result);
+                ushort len = System.BitConverter.ToUInt16(result, 0);
+                byte[] packbuf = new byte[len];
+                Array.Copy(result, 2, packbuf, 0, len);
+                string decstr = "";
+                crypt.decryptAES(packbuf, out decstr);
+
                 RespLogin resp = new RespLogin();
-                resp.make(result);
-                Console.WriteLine("收到消息:flag=" + resp.flag + ",numid=" + resp.numid);
+                resp.make(UTF8Encoding.UTF8.GetBytes(decstr));
+                Console.WriteLine("登录回复:flag=" + resp.flag + ",numid=" + resp.numid);
             }
 
             Console.ReadKey();
         }
-
     }
 }
