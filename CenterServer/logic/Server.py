@@ -37,6 +37,9 @@ class Server(ServerInterface.ServerBase):
     def run(self):
         self.m_config.connect(self.configCallBack)
 
+        self.m_timer = TimerService(1, self.timer)
+        self.m_timer.startService()
+
         # 要放在最后一步
         from twisted.internet import reactor
         self.m_isRunning = True
@@ -59,8 +62,6 @@ class Server(ServerInterface.ServerBase):
                 return
             self.m_connectorServer.begin(self.m_config.getPort())
 
-            self.m_timer = TimerService(1, self.timer)
-            self.m_timer.startService()
         else:
             logging.error("connect config error and return")
             self.stop()

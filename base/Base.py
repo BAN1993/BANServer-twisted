@@ -71,7 +71,7 @@ class protocolBase(object):
         return ret
 
     def getStr(self):
-        strlen = self.getInt()
+        strlen = self.getUShort()
         if len(self.bs_buf) < self.bs_nowindex + strlen:
             raise protocolException("data len err,datalen=" + str(len(self.bs_buf)) + ",aimlen=" + str(self.bs_nowindex + strlen))
         (ret,) = struct.unpack(str(strlen) + "s", self.bs_buf[self.bs_nowindex : self.bs_nowindex + strlen])
@@ -109,14 +109,14 @@ class protocolBase(object):
     def packStr(self,src):
         src = str(src)
         strlen = len(src)
-        self.bs_buf = self.bs_buf + struct.pack("i" + str(strlen) + "s", strlen, src)
+        self.bs_buf = self.bs_buf + struct.pack("H" + str(strlen) + "s", strlen, src)
 
     def packEnd(self):
         """已知协议:打包结束"""
         self.replaceHand()
         cryptBuf = gCrypt.encryptAES(self.bs_buf)
         buflen = len(cryptBuf)
-        lenbytes = struct.pack("I", buflen)
+        lenbytes = struct.pack("H", buflen)
         cryptBuf = lenbytes[0 : 2] + cryptBuf
         return cryptBuf
 
