@@ -10,14 +10,14 @@ import log
 
 if __name__ == '__main__':
 
-    log.initLog("logging.conf")
-    conf = ConfigParser.ConfigParser()
-    conf.read('config.ini')
-
     subtype = 1  # 默认为1
     if len(sys.argv) == 2:
         subtype = int(sys.argv[1])
+
+    log.initLog("srs", subtype)
     logging.info("subytype=%d" % subtype)
+    conf = ConfigParser.ConfigParser()
+    conf.read('config.ini')
 
     svr = Server.Server()
     try:

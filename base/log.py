@@ -1,18 +1,28 @@
+#encoding:utf-8
+
 import os
 import logging
 import logging.config
+import time
 
-
-def initLog(fname):
-    if os.path.exists('log'):
-        print "MyLog.init:log is exists"
-    else:
+def initLog(fname,subtype):
+    if not os.path.exists('log'):
         os.mkdir("log")
 
-    # logging.basicConfig(level=logging.DEBUG,
-    #    format='%(asctime)s[%(levelname)s][%(filename)s][%(funcName)s.%(lineno)d]%(message)s',
-    #    datefmt='[%Y-%m-%d %H:%M:%S]',
-    #    filename=('log/%s_%s.log' % (fname,time.strftime("%Y%m%d-%H%M%S",time.localtime()))),
-    #    filemode='w')
+    #直接通过代码初始化日志模块
 
-    logging.config.fileConfig(fname)
+    #日志格式
+    fmt_str = '%(asctime)s[%(levelname)s][%(filename)s][%(funcName)s.%(lineno)d]%(message)s'
+    fmt_date = '[%Y-%m-%d %H:%M:%S]'
+    formatter = logging.Formatter(fmt_str,fmt_date)
+    #日志文件名
+    logfilename = 'log/%s%d.log' % (fname,subtype)
+
+    logging.basicConfig()
+
+    timehandle = logging.handlers.TimedRotatingFileHandler(logfilename, when='midnight', interval=1, backupCount=10)
+    timehandle.suffix = "%Y-%m-%d-%H%M%S.log"
+    timehandle.setLevel(logging.DEBUG)
+    timehandle.setFormatter(formatter)
+    logging.getLogger('').addHandler(timehandle)
+
