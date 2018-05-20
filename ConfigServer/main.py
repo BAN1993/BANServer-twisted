@@ -10,7 +10,7 @@ import log
 
 if __name__ == '__main__':
 
-    log.initLog("srs", 1)
+    log.initLog("config", 1)
     conf = ConfigParser.ConfigParser()
     conf.read('config.ini')
 

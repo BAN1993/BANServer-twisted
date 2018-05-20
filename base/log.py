@@ -18,11 +18,10 @@ def initLog(fname,subtype):
     #日志文件名
     logfilename = 'log/%s%d.log' % (fname,subtype)
 
-    logging.basicConfig()
-
     timehandle = logging.handlers.TimedRotatingFileHandler(logfilename, when='midnight', interval=1, backupCount=10)
     timehandle.suffix = "%Y-%m-%d-%H%M%S.log"
-    timehandle.setLevel(logging.DEBUG)
+    #timehandle.setLevel(logging.DEBUG)
     timehandle.setFormatter(formatter)
+    timehandle.propagate = 0
     logging.getLogger('').addHandler(timehandle)
 

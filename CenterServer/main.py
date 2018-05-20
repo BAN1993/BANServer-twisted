@@ -14,7 +14,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         subtype = int(sys.argv[1])
 
-    log.initLog("srs", subtype)
+    log.initLog("center", subtype)
     logging.info("subytype=%d" % subtype)
     conf = ConfigParser.ConfigParser()
     conf.read('config.ini')
