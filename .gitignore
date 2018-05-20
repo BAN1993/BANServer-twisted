@@ -9,3 +9,4 @@ doc/auth.xmind
 *.log
 *.log
 .idea/inspectionProfiles/Project_Default.xml
+ConfigServer/config.ini
