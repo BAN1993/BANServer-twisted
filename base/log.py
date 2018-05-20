@@ -5,7 +5,7 @@ import logging
 import logging.config
 import time
 
-def initLog(fname,subtype):
+def initLog(fname,subtype,level = logging.DEBUG):
     if not os.path.exists('log'):
         os.mkdir("log")
 
@@ -20,8 +20,9 @@ def initLog(fname,subtype):
 
     timehandle = logging.handlers.TimedRotatingFileHandler(logfilename, when='midnight', interval=1, backupCount=10)
     timehandle.suffix = "%Y-%m-%d-%H%M%S.log"
-    #timehandle.setLevel(logging.DEBUG)
     timehandle.setFormatter(formatter)
     timehandle.propagate = 0
+
+    logging.getLogger('').setLevel(level)
     logging.getLogger('').addHandler(timehandle)
 
