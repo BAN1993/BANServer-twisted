@@ -9,6 +9,12 @@ import ServerInterface
 import ConnectorClient
 import ProtocolCFG
 
+"""
+    配置服务的客户端
+    1.连接失败则停止服务
+    2.第一次尝试连接不成功则视为失败,其他情况都会重连
+"""
+
 class ConfigClent(ServerInterface.ClientBase):
 
     m_isConnected = False

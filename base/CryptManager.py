@@ -8,23 +8,15 @@ import logging
 
 import Base
 
-
 class CryptManager(object):
     m_AES_key = None
     m_AES_mode = AES.MODE_CBC
     m_AES_hadKey = False
 
     def init(self, conf):
-        self.m_AES_key = str(conf.get("serverConfig", "aeskey"))
+        key = str(conf.get("serverConfig", "aeskey"))
         logging.debug("key=%s,len=%d" % (self.m_AES_key,len(self.m_AES_key)))
-        if len(self.m_AES_key) < 16:
-            #raise Base.cryptException("crypt key len must be 16")
-            add = 16 - len(self.m_AES_key)
-            self.m_AES_key = self.m_AES_key + ('\0' * add)
-        elif len(self.m_AES_key) > 16:
-            raise Base.cryptException("crypt key len must <= 16")
-
-        self.m_AES_hadKey = True
+        self.setAESKey(key)
 
     def setAESKey(self, key):
         if len(str(key)) < 16:

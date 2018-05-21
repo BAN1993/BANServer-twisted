@@ -3,6 +3,12 @@
 import logging
 from twisted.internet.protocol import ClientFactory, Protocol
 
+"""
+    连接客户端
+    1.每个对象一个连接
+    2.可设置是否自动重连
+"""
+
 class ConnectClientProtocl(Protocol):
 
     def connectionMade(self):

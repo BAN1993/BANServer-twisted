@@ -3,6 +3,12 @@
 import MySQLdb
 import logging
 
+"""
+    数据库管理类
+    1.需要定时调用onTimer来保持连接
+    2.查询用select,其他用querry
+"""
+
 class DBManager(object):
     m_ip = ''
     m_port = 0

@@ -1,6 +1,11 @@
+#encoding:utf-8
 
 import logging
 from twisted.internet.protocol import ServerFactory, Protocol
+
+"""
+    连接服务端
+"""
 
 class ConnectServerProtocl(Protocol):
 
