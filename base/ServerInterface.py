@@ -51,27 +51,30 @@ class ClientBase(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def newServer(self,conn):
+    def connectSuccess(self,appid,client):
         """
         成功连接到server
-        :param conn: ConnectClientProtocl
+        :param appid: server id
+        :param conn: ConnectorClient
         :return: void
         """
         pass
 
     @abstractmethod
-    def lostServer(self,conn):
+    def lostServer(self,appipd,conn):
         """
         失去和server的连接
+        :param appid: server id
         :param conn: ConnectClientProtocl
         :return: void
         """
         pass
 
     @abstractmethod
-    def recvFromServer(self,conn,data):
+    def recvFromServer(self,appid,conn,data):
         """
         收到server的消息
+        :param appid: server id
         :param conn: ConnectClientProtocl
         :param data: buf
         :return: void

@@ -12,15 +12,15 @@ from twisted.internet.protocol import ClientFactory, Protocol
 class ConnectClientProtocl(Protocol):
 
     def connectionMade(self):
-        self.factory.m_client.setConn(self)
-        self.factory.m_client.m_server.newServer(self)
+        self.factory.m_client.connectSuccess(self)
+        self.factory.m_client.m_server.newServer(self.m_appid,self)
 
     def dataReceived(self, data):
-        self.factory.m_client.m_server.recvFromServer(self, data)
+        self.factory.m_client.m_server.recvFromServer(self.m_appid,self, data)
 
     def connectionLost(self, reason):
         logging.error("lost svr,reason=%s" % str(reason))
-        self.factory.m_client.m_server.lostServer(self)
+        self.factory.m_client.m_server.lostServer(self.m_appid,self)
 
 class ConnectClientFactory(ClientFactory):
 
@@ -44,6 +44,7 @@ class ConnectorClient(object):
     m_conectFlag = False
 
     m_reconnect = True
+    m_appid = 0
     m_host = ""
     m_port = 0
 
@@ -57,7 +58,8 @@ class ConnectorClient(object):
         self.m_server = server
         self.m_factory = ConnectClientFactory(self)
 
-    def connect(self,host,port):
+    def connect(self,appid,host,port):
+        self.m_appid = appid
         self.m_host = host
         self.m_port = port
         logging.info("connect to ip=%s,post=%d" % (self.m_host, self.m_port))
@@ -69,9 +71,10 @@ class ConnectorClient(object):
             from twisted.internet import reactor
             reactor.callLater(1,self.connect,self.m_host,self.m_port)
 
-    def setConn(self,conn):
-        logging.info("set conn")
+    def connectSuccess(self,conn):
+        logging.info("connect success")
         self.m_conn = conn
+        self.m_server.connectSuccess(self.m_appid,self)
 
     def sendData(self,data):
         #self.m_connector.write(data)
