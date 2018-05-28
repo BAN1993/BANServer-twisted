@@ -8,12 +8,13 @@ from twisted.application.internet import TimerService
 import Base
 import ServerInterface
 import ConnectorServer
-import ConnectorClient
+#import ConnectorClient
+import ClientManager
 import ConfigClient
 import PlayerManager
 from CryptManager import gCrypt
 
-class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
+class Server(ServerInterface.ServerBase,ServerInterface.ClientManager):
 
     m_isRunning = False
 
@@ -27,7 +28,7 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
 
     m_centerCliHost = ""
     m_centerCliPort = 0
-    m_centerClient = None
+    m_centerClients = None
 
     def init(self,subtype,conf):
         cfgip = str(conf.get("configsvr", "host"))
@@ -35,7 +36,7 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
         self.m_config = ConfigClient.ConfigClent(self, subtype, Base.SVR_TYPE_SRS, cfgip, cfgport)
 
         self.m_connectorServer = ConnectorServer.ConnectorServer(self)
-        self.m_centerClient = ConnectorClient.ConnectorClient(self)
+        self.m_centerClients = ClientManager.ClientManager(self)
         self.m_playerManager = PlayerManager.PlayerManager(self)
         gCrypt.init(conf)
 
@@ -66,17 +67,20 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
 
     def getGameServerConfigCB(self,flag,retstr):
         if flag:
+            # TODO 这里暂时只连接一个
             strconfig = str(retstr[0])
             tab = strconfig.split("$$$")
+            appid = int(tab[0])
             self.m_centerCliHost = str(tab[1])
             self.m_centerCliPort = int(tab[2])
-            self.m_centerClient.connect(self.m_centerCliHost, self.m_centerCliPort)
+            self.m_centerClients.addConnect(appid,self.m_centerCliHost, self.m_centerCliPort)
         else:
             logging.error("get gameserver config error")
             self.stop()
 
     def stop(self):
-        self.m_timer.stopService()
+        if self.m_timer:
+            self.m_timer.stopService()
         if self.m_isRunning:
             from twisted.internet import reactor
             if not reactor._stopped :
@@ -91,23 +95,16 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientBase):
     def newClient(self,conn):
         self.m_playerManager.newClient(conn)
 
-    def recvFromClient(self,conn,data):
-        self.m_playerManager.recvFromClient(conn,data)
+    def recvFromClient(self,conn,packlen, appid, numid, xyid, data):
+        self.m_playerManager.recvFromClient(conn,packlen, appid, numid, xyid, data)
 
     def loseClient(self,conn):
         self.m_playerManager.loseClient(conn)
 
     # GameSver
-    def newServer(self,conn):
-        self.m_playerManager.newServer(conn)
-
-    def lostServer(self,conn):
-        logging.warning("lost server and try connect")
-        self.m_centerClient.reConnect()
-
-    def recvFromServer(self,conn,data):
-        self.m_playerManager.recvFromServer(conn,data)
+    def recvData(self,packlen,appid,srcappid,numid,xyid,data):
+        self.m_playerManager.recvFromServer(packlen,appid,srcappid,numid,xyid,data)
 
     def sendToServer(self,data):
-        self.m_centerClient.sendData(data)
+        self.m_centerClients.sendData(data)
 

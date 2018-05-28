@@ -15,7 +15,6 @@ class CryptManager(object):
 
     def init(self, conf):
         key = str(conf.get("serverConfig", "aeskey"))
-        logging.debug("key=%s,len=%d" % (self.m_AES_key,len(self.m_AES_key)))
         self.setAESKey(key)
 
     def setAESKey(self, key):

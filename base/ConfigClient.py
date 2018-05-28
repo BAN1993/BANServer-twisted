@@ -49,7 +49,7 @@ class ConfigClent(ServerInterface.ClientBase):
         """callback(bool flag)"""
         logging.info("begin connect configsvr,ip=%s,port=%d" % (self.m_cfgIp,self.m_cfgPort))
         self.m_conn = ConnectorClient.ConnectorClient(self)
-        self.m_conn.connect(self.m_cfgIp, self.m_cfgPort)
+        self.m_conn.connect(0,self.m_cfgIp, self.m_cfgPort)
         self.m_connectCallback = callback
 
     def getPort(self):
@@ -74,7 +74,7 @@ class ConfigClent(ServerInterface.ClientBase):
         self.__reqCallback[req.askid] = callback
         self.__reqRetStr[req.askid] = []
 
-    def newServer(self, conn):
+    def connectSuccess(self, appid,client):
         logging.info("connect configsvr success")
         self.m_isConnected = True
         if not self.m_isInited:
@@ -84,7 +84,7 @@ class ConfigClent(ServerInterface.ClientBase):
             buf = req.pack()
             self.m_conn.sendData(buf)
 
-    def lostServer(self,conn):
+    def connectLost(self,appid,client):
         if self.m_isInited:
             #如果已经验证过,则可以重连
             logging.warn("lost configsvr and try connect")
@@ -104,29 +104,14 @@ class ConfigClent(ServerInterface.ClientBase):
         self.__reqRetStr.clear()
         self.__recvData = ""
 
-    def recvFromServer(self,conn,data):
+    def recvData(self,packlen,appid,srcappid,numid,xyid,data):
         if not self.m_isConnected:
             logging.error("recv data but is not connnected")
             return
+        self.selectProtocol(packlen,appid,srcappid,numid,xyid,data)
 
-        self.__recvData += data
-        while True:
-            packlen = Base.getPackLen(self.__recvData)
-            if packlen <= 0:
-                return
-            if packlen + Base.LEN_SHORT > len(self.__recvData):
-                return
-
-            data = self.__recvData[0: packlen + Base.LEN_SHORT]
-            self.__recvData = self.__recvData[packlen + Base.LEN_SHORT:]
-            self.selectProtocol(data)
-
-    def selectProtocol(self,buf):
-        ret, packlen, appid, numid, xyid, data = Base.getXYHand(buf)
-        if not ret:
-            logging.warning("getXYHand error")
-            return
-        logging.debug("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen, appid, numid, xyid))
+    def selectProtocol(self,packlen,appid,srcappid,numid,xyid,data):
+        logging.debug("packlen=%d,appid=%d,srcappid=%d,numid=%d,xyid=%d" % (packlen, appid, srcappid, numid, xyid))
 
         if xyid == ProtocolCFG.XYID_CFG_RESP_CONNECT:
             resp = ProtocolCFG.RespConnect()

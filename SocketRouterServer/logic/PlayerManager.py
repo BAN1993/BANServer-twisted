@@ -17,8 +17,6 @@ class PlayerManager(object):
 
     m_server = None
 
-    m_svrDataList = {} # [client conn] = ""
-
     def __init__(self,server):
         self.m_server = server
 
@@ -38,15 +36,15 @@ class PlayerManager(object):
         buf = resp.pack()
         pl.sendData(buf)
 
-    def recvFromClient(self,conn,data):
-        logging.debug("numid=%d,connid=%d,conn=%s" % (conn.m_numid,conn.m_connid,str(conn)))
+    def recvFromClient(self,conn,packlen,appid,numid,xyid,data):
+        logging.debug("numid=%d,connid=%d" % (numid,conn.m_connid))
         if self.m_playerList.has_key(conn.m_numid):
-            self.m_playerList[conn.m_numid].recvData(data)
+            self.m_playerList[conn.m_numid].recvData(conn,packlen,appid,numid,xyid,data)
         else:
             if self.m_unAuthList.has_key(conn.m_connid):
-                self.m_unAuthList[conn.m_connid].recvData(data)
+                self.m_unAuthList[conn.m_connid].recvData(conn,packlen,appid,numid,xyid,data)
             else:
-                logging.warn("can not find conn in two list,numid=%d,connid=%d,ip=%s" % (conn.m_numid, conn.m_connid, conn.transport.hostname))
+                logging.warn("can not find conn in two list,numid=%d,connid=%d" % (conn.m_numid, conn.m_connid))
 
     def loseClient(self,conn):
         numid = conn.m_numid
@@ -58,32 +56,11 @@ class PlayerManager(object):
             logging.info("loseconn numid=%d,ip=%s,del from playerlist" % (numid, conn.transport.hostname))
             del self.m_playerList[numid]
 
-    def newServer(self,conn):
-        self.m_svrDataList[conn] = ""
+    def recvFromServer(self,packlen,appid,srcappid,numid,xyid,data):
+        self.selectProtocol(packlen,appid,srcappid,numid,xyid,data)
 
-    def recvFromServer(self,conn,data):
-        if self.m_svrDataList.has_key(conn):
-            self.m_svrDataList[conn] += data
-            while True:
-                packlen = Base.getPackLen(self.m_svrDataList[conn])
-                if packlen <= 0:
-                    return
-                if packlen + Base.LEN_SHORT > len(self.m_svrDataList[conn]):
-                    return
-
-                data = self.m_svrDataList[conn][0: packlen + Base.LEN_SHORT]
-                self.m_svrDataList[conn] = self.m_svrDataList[conn][packlen + Base.LEN_SHORT:]
-                self.selectProtocol(data)
-        else:
-            logging.error("no data list")
-
-    def selectProtocol(self,buf):
-        #现在appid还没用,后面多个服务时会用到
-        ret, packlen, appid, numid, xyid, data = Base.getXYHand(buf)
-        if not ret:
-            logging.warning("getXYHand error")
-            return
-        logging.debug("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen,appid,numid,xyid))
+    def selectProtocol(self,packlen,appid,srcappid,numid,xyid,data):
+        logging.debug("packlen=%d,appid=%d,srcappid=%d,numid=%d,xyid=%d" % (packlen,appid,srcappid,numid,xyid))
         #处理特殊逻辑用
         if xyid == ProtocolSRS.XYID_SRS_RESP_LOGIN :
             mpc = ProtocolSRS.RespLogin()
@@ -106,11 +83,15 @@ class PlayerManager(object):
                 logging.warning("login err,connid=%d,flag=%d,numid=%d" % (mpc.connid, mpc.flag, mpc.numid))
 
             #原样下发
+            baseprotocol = Base.protocolBase()
+            buf = baseprotocol.packUnknown(appid,numid,xyid,data)
             pl.sendData(buf)
 
         else:
             if self.m_playerList.has_key(numid):
                 pl = self.m_playerList[numid]
+                baseprotocol = Base.protocolBase()
+                buf = baseprotocol.packUnknown(appid, numid, xyid, data)
                 pl.sendData(buf)
             else:
                 logging.warning("have no user numid=%d" % numid)

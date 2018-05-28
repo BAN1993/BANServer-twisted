@@ -13,42 +13,65 @@ import ConnectorClient
     1.支持多个连接
 """
 
-class ClientStruct:
-    appid = 0
-    host = ""
-    port = 0
-    def __init__(self,appid,host,port):
-        self.appid = appid
-        self.host = host
-        self.port = port
-        pass
-
 class ClientManager(ServerInterface.ClientBase):
 
-    m_StructList = {} # [appid] = ClientStruct
-    m_ClientList = {} # [appid] = ConnectorClient
+    m_server = None
+    m_reconnect = True
+
+    m_mainAppid = 0
+    m_allClientList = {} # [appid] = ConnectorClient 所有连接的列表
+    m_sendClientList = {} # [appid] = ConnectorClient 有效连接的列表
+
+    def __init__(self,server,reconnect=True):
+        self.m_server = server
+        self.m_reconnect = reconnect
+
+    def setMainConnect(self,appid):
+        """设置主连接"""
+        self.m_mainAppid = appid
 
     def addConnect(self,appid,host,port):
-        if self.m_StructList.has_key(appid):
+        """默认设置第一个连接为主连接"""
+        self.m_mainAppid = appid
+
+        if self.m_allClientList.has_key(appid):
             logging.warning("appid=%s is in list" % appid)
             return
         else:
-            cstruct = ClientStruct(appid,host,port)
-            m_StructList[appid] = cstruct
-
             client = ConnectorClient.ConnectorClient(self)
             client.connect(appid,host,port)
+            self.m_allClientList[appid] = client
+    
+    def connectSuccess(self,appid,client):
+        if self.m_sendClientList.has_key(appid):
+            logging.warning("appid=%s is in send list" % appid)
+        else:
+            logging.info("add appid=%d to send list" % appid)
+            self.m_sendClientList[appid] = client
+
+    def connectLost(self,appid,client):
+        if self.m_sendClientList.has_key(appid):
+            logging.warning("appid=%d lose connect,move from send list" % appid)
+            del self.m_sendClientList[appid]
+        else:
+            logging.warning("appid=%s lost connect,but not in send list" % appid)
         
+        if self.m_reconnect:
+            logging.info("appid=%d try reconnect" % appid)
+            client.reConnect()
         
+    def recvData(self,packlen,appid,srcappid,numid,xyid,data):
+        self.m_server.recvData(packlen,appid,srcappid,numid,xyid,data)
 
     def sendData(self,buf,appid=0):
-        pass
-
-    def connectSuccess(self,appid,client):
-        pass
-
-    def lostServer(self,appid,conn):
-        pass
-
-    def recvFromServer(self,appid,conn,data):
-        pass
+        """appid=0则往主连接发"""
+        if appid != 0:
+            if self.m_sendClientList.has_key(appid):
+                self.m_sendClientList[appid].sendData(buf)
+            else:
+                logging.error("appid=%d not in send list" % appid)
+        else:
+            if self.m_sendClientList.has_key(self.m_mainAppid):
+                self.m_sendClientList[self.m_mainAppid].sendData(buf)
+            else:
+                logging.error("mainappid=%d not in send list" % self.m_mainAppid)

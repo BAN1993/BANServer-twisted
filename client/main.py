@@ -7,70 +7,46 @@ import Base
 import ServerInterface
 import ProtocolSRS
 from CryptManager import gCrypt
-import ConnectorClient
+import ClientManager
 
-class client(ServerInterface.ClientBase):
+class client(ServerInterface.ClientManager):
 
     m_host = ""
     m_port = 0
 
     m_conn = None
-    __recvBuf = ""
 
     def __init__(self,host,port):
         self.m_host = host
         self.m_port = port
-        self.m_conn = ConnectorClient.ConnectorClient(self)
-        self.m_conn.setReconnect(False)
+        self.m_conn = ClientManager.ClientManager(self)
 
     def run(self):
-        self.m_conn.connect(self.m_host,self.m_port)
+        self.m_conn.addConnect(0,self.m_host,self.m_port)
         from twisted.internet import reactor
         reactor.run()
 
-    def newServer(self,conn):
-        print "new server"
+    def recvData(self,packlen,appid,srcappid,numid,xyid,data):
+        if xyid == ProtocolSRS.XYID_SRS_RESP_CONNECT:
+            # print Base.getBytes(buf)
+            resp = ProtocolSRS.RespConnect()
+            resp.make(data)
+            print "connid=%d" % (resp.connid)
 
-    def recvFromServer(self,conn, data):
-        self.__recvBuf += data
-        while True:
-            packlen = Base.getPackLen(self.__recvBuf)
-            if packlen <= 0:
-                return
-            if packlen + Base.LEN_SHORT > len(self.__recvBuf):
-                return
-            data = self.__recvBuf[0: packlen + Base.LEN_SHORT]
-            self.__recvBuf = self.__recvBuf[packlen + Base.LEN_SHORT:]
-            ret, packlen, appid, numid, xyid, buf = Base.getXYHand(data)
-            if not ret:
-                print("getXYHand error")
-                continue
-            print("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen,appid,numid,xyid))
-            if xyid == ProtocolSRS.XYID_SRS_RESP_CONNECT:
-                # print Base.getBytes(buf)
-                resp = ProtocolSRS.RespConnect()
-                resp.make(buf)
-                print "connid=%d" % (resp.connid)
-
-                req = ProtocolSRS.ReqLogin()
-                req.connid = resp.connid
-                req.userid = "test3003"
-                req.password = "123456"
-                sendbuf = req.pack()
-                print "send login:userid=%s" % (req.userid)
-                self.m_conn.sendData(sendbuf)
-            elif xyid == ProtocolSRS.XYID_SRS_RESP_LOGIN:
-                resp = ProtocolSRS.RespLogin()
-                resp.make(buf)
-                print "recv respLogin:flag=%d,numid=%d" % (resp.flag,resp.numid)
-                if resp.flag != resp.FLAG.SUCCESS:
-                    from twisted.internet import reactor
-                    reactor.stop()
-
-    def lostServer(self,conn):
-        print "lost server"
-        from twisted.internet import reactor
-        reactor.stop()
+            req = ProtocolSRS.ReqLogin()
+            req.connid = resp.connid
+            req.userid = "test3003"
+            req.password = "123456"
+            sendbuf = req.pack()
+            print "send login:userid=%s" % (req.userid)
+            self.m_conn.sendData(sendbuf)
+        elif xyid == ProtocolSRS.XYID_SRS_RESP_LOGIN:
+            resp = ProtocolSRS.RespLogin()
+            resp.make(data)
+            print "recv respLogin:flag=%d,numid=%d" % (resp.flag,resp.numid)
+            if resp.flag != resp.FLAG.SUCCESS:
+                from twisted.internet import reactor
+                reactor.stop()
 
 if __name__ == '__main__':
     gCrypt.setAESKey("SocketRouterSvr")

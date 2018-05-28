@@ -24,12 +24,16 @@ class ServerBase(object):
         pass
 
     @abstractmethod
-    def recvFromClient(self,conn,data):
+    def recvFromClient(self,conn,packlen,appid,numid,xyid,data):
         """
         收到消息
-        :param conn: ConnectServerProtocl
-        :param data: buf
-        :return: void
+        :param conn:        ConnectServerProtocl
+        :param packlen:     协议体长度
+        :param appid:       目标appid
+        :param numid:       账号
+        :param xyid:        协议号
+        :param data:        协议体
+        :return:
         """
         pass
 
@@ -45,7 +49,7 @@ class ServerBase(object):
 class ClientBase(object):
     """
     client基类
-    若要连接其他服务,则应该继承和实现此类
+    服务端不需要继承此类
     """
 
     __metaclass__ = ABCMeta
@@ -55,31 +59,55 @@ class ClientBase(object):
         """
         成功连接到server
         :param appid: server id
-        :param conn: ConnectorClient
+        :param client: ConnectorClient
         :return: void
         """
         pass
 
     @abstractmethod
-    def lostServer(self,appipd,conn):
+    def connectLost(self,appid,client):
         """
         失去和server的连接
         :param appid: server id
-        :param conn: ConnectClientProtocl
+        :param client: ConnectorClient
         :return: void
         """
         pass
 
     @abstractmethod
-    def recvFromServer(self,appid,conn,data):
+    def recvData(self,packlen,appid,srcappid,numid,xyid,data):
         """
-        收到server的消息
-        :param appid: server id
-        :param conn: ConnectClientProtocl
-        :param data: buf
-        :return: void
+        收到消息
+        :param packlen:     协议体长度
+        :param appid:       目标appid
+        :param srcappid:    来源appid
+        :param numid:       账号
+        :param xyid:        协议号
+        :param data:        协议体
+        :return:
         """
         pass
 
+class ClientManager(object):
+    """
+    client管理类
+    连接其他服务需要继承此类
+    """
 
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def recvData(self,packlen,appid,srcappid,numid,xyid,data):
+        """
+        收到消息
+        :param packlen:     协议体长度
+        :param appid:       目标appid
+        :param srcappid:    来源appid
+        :param numid:       账号
+        :param xyid:        协议号
+        :param data:        协议体
+        :return:
+        """
+        pass
+        
 

@@ -22,7 +22,6 @@ class Server(ServerInterface.ServerBase):
 
     m_port = 0
     m_connectorServer = None
-    m_svrDataList = {} # [client conn] = ""
 
     def init(self, subtype, conf):
         cfgip = str(conf.get("configsvr", "host"))
@@ -80,35 +79,15 @@ class Server(ServerInterface.ServerBase):
 
     def newClient(self,conn):
         logging.info("conn ip=%s" % conn.transport.hostname)
-        self.m_svrDataList[conn] = ""
 
-    def recvFromClient(self,conn,data):
-        if self.m_svrDataList.has_key(conn):
-            self.m_svrDataList[conn] += data
-            while True:
-                packlen = Base.getPackLen(self.m_svrDataList[conn])
-                if packlen <= 0:
-                    return
-                if packlen + Base.LEN_SHORT > len(self.m_svrDataList[conn]):
-                    return
-
-                data = self.m_svrDataList[conn][0: packlen + Base.LEN_SHORT]
-                self.m_svrDataList[conn] = self.m_svrDataList[conn][packlen + Base.LEN_SHORT:]
-                self.selectProtocol(conn, data)
-        else:
-            logging.error("no data list")
+    def recvFromClient(self,conn,packlen,appid,numid,xyid,data):
+        self.selectProtocol(conn,packlen,appid,numid,xyid,data)
 
     def loseClient(self,conn):
         logging.info("conn ip=%s" % (conn.transport.hostname))
-        if self.m_svrDataList.has_key(conn):
-            del self.m_svrDataList[conn]
 
-    def selectProtocol(self,conn,buf):
-        ret, packlen, appid, numid, xyid, data = Base.getXYHand(buf)
-        if not ret:
-            logging.warning("getXYHand error")
-            return
-        logging.debug("packlen=%d,appid=%d,numid=%d,xyid=%d" % (packlen,appid,numid,xyid))
+    def selectProtocol(self,conn,packlen,appid,numid,xyid,data):
+        logging.debug("packlen=%d,appid=%d,srcappid=%d,numid=%d,xyid=%d" % (packlen,appid,conn.m_numid,numid,xyid))
         if xyid == ProtocolSRS.XYID_SRS_REQ_LOGIN:
             req = ProtocolSRS.ReqLogin()
             ret = req.make(data)

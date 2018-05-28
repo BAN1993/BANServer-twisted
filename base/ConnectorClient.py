@@ -1,5 +1,6 @@
 #encoding:utf-8
 
+import Base
 import logging
 from twisted.internet.protocol import ClientFactory, Protocol
 
@@ -11,16 +12,36 @@ from twisted.internet.protocol import ClientFactory, Protocol
 
 class ConnectClientProtocl(Protocol):
 
+    m_buf = ""
+
     def connectionMade(self):
+        self.m_buf = ""
         self.factory.m_client.connectSuccess(self)
-        self.factory.m_client.m_server.newServer(self.m_appid,self)
 
     def dataReceived(self, data):
-        self.factory.m_client.m_server.recvFromServer(self.m_appid,self, data)
+        self.m_buf += data
+        self.parseBuf()
 
     def connectionLost(self, reason):
+        self.m_buf = ""
         logging.error("lost svr,reason=%s" % str(reason))
-        self.factory.m_client.m_server.lostServer(self.m_appid,self)
+        self.factory.m_client.connectLost(self)
+
+    def parseBuf(self):
+        while True:
+            packlen = Base.getPackLen(self.m_buf)
+            if packlen <= 0:
+                return
+            if packlen + Base.LEN_SHORT > len(self.m_buf):
+                return
+            src = self.m_buf[0: packlen + Base.LEN_SHORT]
+            self.m_buf = self.m_buf[packlen + Base.LEN_SHORT:]
+            ret, packlen, appid, numid, xyid, data = Base.getXYHand(src)
+            if ret:
+                self.factory.m_client.recvData(packlen,appid,numid,xyid,data)
+            else:
+                logging.error("parseBuf error")
+
 
 class ConnectClientFactory(ClientFactory):
 
@@ -33,7 +54,7 @@ class ConnectClientFactory(ClientFactory):
 
     def clientConnectionFailed(self, connector, reason):
         logging.error("can not connect or lost,connector=%s.reason=%s" % (str(connector),str(reason)))
-        self.m_client.m_server.lostServer(self)
+        self.m_client.connectLost(self)
         #self.reConnect()
 
     def reConnect(self):
@@ -69,12 +90,14 @@ class ConnectorClient(object):
     def reConnect(self):
         if self.m_reconnect:
             from twisted.internet import reactor
-            reactor.callLater(1,self.connect,self.m_host,self.m_port)
+            reactor.callLater(1,self.connect,self.m_appid,self.m_host,self.m_port)
 
     def connectSuccess(self,conn):
-        logging.info("connect success")
         self.m_conn = conn
         self.m_server.connectSuccess(self.m_appid,self)
+
+    def connectLost(self,conn):
+        self.m_server.connectLost(self.m_appid,self)
 
     def sendData(self,data):
         #self.m_connector.write(data)
@@ -82,6 +105,9 @@ class ConnectorClient(object):
             self.m_conn.transport.write(data)
         else:
             logging.error("server conn is none")
+
+    def recvData(self,packlen,appid,numid,xyid,data):
+        self.m_server.recvData(packlen,appid,self.m_appid,numid,xyid,data)
 
     def setReconnect(self,setbool):
         self.m_reconnect = setbool

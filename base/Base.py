@@ -114,6 +114,7 @@ class protocolBase(object):
     def packEnd(self):
         """已知协议:打包结束"""
         self.replaceHand()
+
         cryptBuf = gCrypt.encryptAES(self.bs_buf)
         buflen = len(cryptBuf)
         lenbytes = struct.pack("H", buflen)
