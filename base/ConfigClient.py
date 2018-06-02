@@ -74,15 +74,20 @@ class ConfigClent(ServerInterface.ClientBase):
         self.__reqCallback[req.askid] = callback
         self.__reqRetStr[req.askid] = []
 
-    def connectSuccess(self, appid,client):
-        logging.info("connect configsvr success")
-        self.m_isConnected = True
-        if not self.m_isInited:
-            req = ProtocolCFG.ReqConnect()
-            req.subtype = self.m_subType
-            req.svrtype = self.m_svrType
-            buf = req.pack()
-            self.m_conn.sendData(buf)
+    def connectSuccess(self, appid,client,flag):
+        if flag:
+            logging.info("connect to configsvr success")
+            self.m_isConnected = True
+            if not self.m_isInited:
+                req = ProtocolCFG.ReqConnect()
+                req.subtype = self.m_subType
+                req.svrtype = self.m_svrType
+                buf = req.pack()
+                self.m_conn.sendData(buf)
+        else:
+            logging.error("connect to configsvr failed")
+            self.connectLost(appid,client)
+
 
     def connectLost(self,appid,client):
         if self.m_isInited:

@@ -26,7 +26,7 @@ class Player:
         self.selectProtocol(conn,packlen,appid,numid,xyid,data)
 
     def sendData(self,data):
-        self.m_conn.transport.write(data)
+        self.m_conn.sendData(data)
 
     def setPlayerData(self,numid):
         self.m_numid = numid

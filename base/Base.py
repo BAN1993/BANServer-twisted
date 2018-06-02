@@ -4,8 +4,6 @@ import time
 import struct
 import logging
 
-from CryptManager import gCrypt
-
 """
 # Protocol Hand
 # buflen    2   H   unsigned short
@@ -23,6 +21,8 @@ SVR_TYPE_CENTER = 2
 
 XYID_CFG_BEGIN  = 101
 XYID_CFG_END    = 201
+XYID_BASE_BEGIN = 1001
+XYID_BASE_END   = 2001
 XYID_SRS_BEGIN  = 10001
 XYID_SRS_END    = 20000
 XYID_GAME_BEGIN = 20001
@@ -114,12 +114,14 @@ class protocolBase(object):
     def packEnd(self):
         """已知协议:打包结束"""
         self.replaceHand()
+        return self.bs_buf
 
-        cryptBuf = gCrypt.encryptAES(self.bs_buf)
-        buflen = len(cryptBuf)
-        lenbytes = struct.pack("H", buflen)
-        cryptBuf = lenbytes[0 : 2] + cryptBuf
-        return cryptBuf
+        #交给连接加解密
+        #cryptBuf = gCrypt.encryptAES(self.bs_buf)
+        #buflen = len(cryptBuf)
+        #lenbytes = struct.pack("H", buflen)
+        #cryptBuf = lenbytes[0 : 2] + cryptBuf
+        #return cryptBuf
 
     def packUnknown(self,appid,numid,xyid,data):
         """打包未知协议"""
@@ -141,20 +143,13 @@ def getBytesIndex(data, begin, strlen):
     return ' '.join(['0x%x' % ord(data[x]) for x in range(begin, begin + strlen)])
 
 def getXYHand(data):
-    """解密并获取包头,包体"""
-    if len(data)<LEN_HAND:
+    """获取并包头,包体"""
+    if len(data) < LEN_HAND:
         return False, 0, 0, 0, 0, ""
-    (alllen,) = struct.unpack("H", data[0 : LEN_SHORT] )
-    if len(data) < alllen + LEN_SHORT:
-        return False, 0, 0, 0, 0, ""
-    xyDataSrc = data[LEN_SHORT : alllen + LEN_SHORT]
-    xyData = gCrypt.decryptAES(xyDataSrc)
-    if len(xyData) < LEN_HAND:
-        return False, 0, 0, 0, 0, ""
-    (packlen, appid, numid, xyid, ) = struct.unpack('HHII', xyData[0 : LEN_HAND])
+    (packlen, appid, numid, xyid, ) = struct.unpack('HHII', data[0 : LEN_HAND])
     if xyid <= 0 or packlen <= 0:
         return False, packlen, appid, numid, xyid, ""
-    return True,packlen, appid, numid, xyid, xyData[LEN_HAND:]
+    return True,packlen, appid, numid, xyid, data[LEN_HAND:]
 
 def getPackLen(data):
     """获取未解密前包长"""

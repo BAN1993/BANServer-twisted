@@ -32,7 +32,8 @@ class ClientManager(ServerInterface.ClientBase):
 
     def addConnect(self,appid,host,port):
         """默认设置第一个连接为主连接"""
-        self.m_mainAppid = appid
+        if self.m_mainAppid <= 0:
+            self.m_mainAppid = appid
 
         if self.m_allClientList.has_key(appid):
             logging.warning("appid=%s is in list" % appid)
@@ -42,12 +43,15 @@ class ClientManager(ServerInterface.ClientBase):
             client.connect(appid,host,port)
             self.m_allClientList[appid] = client
     
-    def connectSuccess(self,appid,client):
-        if self.m_sendClientList.has_key(appid):
-            logging.warning("appid=%s is in send list" % appid)
+    def connectSuccess(self,appid,client,flag):
+        if flag:
+            if self.m_sendClientList.has_key(appid):
+                logging.warning("appid=%s is in send list" % appid)
+            else:
+                logging.info("add appid=%d to send list" % appid)
+                self.m_sendClientList[appid] = client
         else:
-            logging.info("add appid=%d to send list" % appid)
-            self.m_sendClientList[appid] = client
+            logging.error("can not connect to appid=%d" % appid)
 
     def connectLost(self,appid,client):
         if self.m_sendClientList.has_key(appid):

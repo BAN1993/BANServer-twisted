@@ -2,8 +2,9 @@ import sys
 sys.path.append("../base")
 
 import Base
-from CryptManager import gCrypt
+import CryptManager
 
+gCrypt = CryptManager.CryptManager()
 gCrypt.setAESKey("SocketRouterSvr")
 outsre = gCrypt.encryptAES("abc123")
 print(outsre)

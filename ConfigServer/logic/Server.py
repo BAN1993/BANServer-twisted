@@ -7,7 +7,6 @@ sys.path.append("../base")
 import Base
 import ConnectorServer
 import ProtocolCFG
-from CryptManager import gCrypt
 from DBManager import gDBManager
 
 class Server(object):
@@ -22,8 +21,6 @@ class Server(object):
         self.m_port = int(conf.get("serverConfig", "port"))
         logging.info("svrport=%d" % self.m_port)
         self.m_connectorServer = ConnectorServer.ConnectorServer(self)
-
-        gCrypt.init(conf)
 
         dbip = str(conf.get("dbConfig", "ip"))
         dbport = int(conf.get("dbConfig", "port"))
@@ -72,19 +69,19 @@ class Server(object):
             appid = 0
             port = 0
             config = ""
-            sql = "select A.id,A.port,A.config from config_svr A,config_routing_table B where A.subtype=%d and A.svrtype=%d and B.ip='%s' and A.svrid=B.id" % (req.subtype,req.svrtype,conn.transport.hostname)
+            sql = "select A.id,A.port,A.config from config_svr A,config_routing_table B where A.subtype=%d and A.svrtype=%d and B.ip='%s' and A.svrid=B.id and A.hide=0" % (req.subtype,req.svrtype,conn.transport.hostname)
             ret, row, rslt = gDBManager.select(sql)
             if not ret:
                 resp.flag = resp.FLAG.DBERR
                 logging.error("select ret err,sql=%s" % sql)
                 buf = resp.pack()
-                conn.transport.write(buf)
+                conn.sendData(buf)
                 return
             elif row <= 0:
                 resp.flag = resp.FLAG.NOCONFIG
                 logging.info("select no data,sql=%s" % sql)
                 buf = resp.pack()
-                conn.transport.write(buf)
+                conn.sendData(buf)
                 return
             else:
                 appid = int(rslt[0][0])
@@ -97,7 +94,7 @@ class Server(object):
                 resp.flag = resp.FLAG.ERRAPPID
                 logging.error("error appid,appid=%d" % appid)
                 buf = resp.pack()
-                conn.transport.write(buf)
+                conn.sendData(buf)
                 return
 
             #检查是否重复连接
@@ -105,7 +102,7 @@ class Server(object):
                 resp.flag = resp.FLAG.CONNECTED
                 logging.warning("appid=%d had been connected" % appid)
                 buf = resp.pack()
-                conn.transport.write(buf)
+                conn.sendData(buf)
 
             #这里将appid赋给conn.m_numid
             conn.m_numid = appid
@@ -117,7 +114,7 @@ class Server(object):
             resp.port = port
             resp.config = config
             buf = resp.pack()
-            conn.transport.write(buf)
+            conn.sendData(buf)
         elif xyid == ProtocolCFG.XYID_CFG_REQ_CONFIG:
 
             req = ProtocolCFG.ReqConfig()
@@ -131,7 +128,7 @@ class Server(object):
                 logging.warning("conn is not in svrlist,sql=%s" % req.sqlstr)
                 respFinish.flag = respFinish.FLAG.BAN
                 buf = respFinish.pack()
-                conn.transport.write(buf)
+                conn.sendData(buf)
                 return
 
             ret, row, rslt = gDBManager.select(req.sqlstr)
@@ -139,13 +136,13 @@ class Server(object):
                 respFinish.flag = respFinish.FLAG.DBERR
                 logging.error("select ret err,sql=%s" % req.sqlstr)
                 buf = respFinish.pack()
-                conn.transport.write(buf)
+                conn.sendData(buf)
                 return
             elif row <= 0:
                 respFinish.flag = respFinish.FLAG.NOCONFIG
                 logging.warning("had no config,sql=%s" % req.sqlstr)
                 buf = respFinish.pack()
-                conn.transport.write(buf)
+                conn.sendData(buf)
                 return
             else:
                 resp = ProtocolCFG.RespConfig()
@@ -155,12 +152,12 @@ class Server(object):
                     logging.debug("type=%s,ret=%s" % (type(rslt[i][0]),rslt[i][0]))
                     resp.retstr = rslt[i][0]
                     buf = resp.pack()
-                    conn.transport.write(buf)
+                    conn.sendData(buf)
 
             respFinish.flag = respFinish.FLAG.SUCCESS
             buf = respFinish.pack()
             logging.info("appid=%d,flag=%d,count=%d" % (conn.m_numid,respFinish.flag,respFinish.count))
-            conn.transport.write(buf)
+            conn.sendData(buf)
 
         else:
             logging.warning("error xyid=%d" % xyid)

@@ -10,7 +10,6 @@ import ServerInterface
 import ConnectorServer
 import ConfigClient
 import ProtocolSRS
-from CryptManager import gCrypt
 from DBManager import gDBManager
 
 class Server(ServerInterface.ServerBase):
@@ -30,7 +29,6 @@ class Server(ServerInterface.ServerBase):
 
         self.m_connectorServer = ConnectorServer.ConnectorServer(self)
 
-        gCrypt.init(conf)
         #gDBManager.init(conf)
 
     def run(self):
@@ -78,7 +76,7 @@ class Server(ServerInterface.ServerBase):
             logging.info("try stop svr,but is not running")
 
     def newClient(self,conn):
-        logging.info("conn ip=%s" % conn.transport.hostname)
+        logging.info("conn ip=%s,appid=%d" % (conn.transport.hostname,conn.m_numid))
 
     def recvFromClient(self,conn,packlen,appid,numid,xyid,data):
         self.selectProtocol(conn,packlen,appid,numid,xyid,data)
@@ -114,7 +112,7 @@ class Server(ServerInterface.ServerBase):
                     logging.info("userid=%s pwd err" % req.userid)
 
             buf = resp.pack()
-            conn.transport.write(buf)
+            conn.sendData(buf)
 
         else:
             logging.warning("unknown xy,xyid=%d" % xyid)

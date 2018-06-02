@@ -4,25 +4,20 @@ import sys
 sys.path.append("../base")
 
 import Base
+import log
 import ServerInterface
 import ProtocolSRS
-from CryptManager import gCrypt
 import ClientManager
 
 class client(ServerInterface.ClientManager):
 
-    m_host = ""
-    m_port = 0
-
     m_conn = None
 
-    def __init__(self,host,port):
-        self.m_host = host
-        self.m_port = port
+    def __init__(self):
         self.m_conn = ClientManager.ClientManager(self)
 
     def run(self):
-        self.m_conn.addConnect(0,self.m_host,self.m_port)
+        self.m_conn.addConnect(1, "127.0.0.1", 8300)
         from twisted.internet import reactor
         reactor.run()
 
@@ -49,7 +44,7 @@ class client(ServerInterface.ClientManager):
                 reactor.stop()
 
 if __name__ == '__main__':
-    gCrypt.setAESKey("SocketRouterSvr")
+    log.initLog("client", 0)
 
-    c = client("127.0.0.1",8300)
+    c = client()
     c.run()

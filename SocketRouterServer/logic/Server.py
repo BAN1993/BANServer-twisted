@@ -8,11 +8,9 @@ from twisted.application.internet import TimerService
 import Base
 import ServerInterface
 import ConnectorServer
-#import ConnectorClient
 import ClientManager
 import ConfigClient
 import PlayerManager
-from CryptManager import gCrypt
 
 class Server(ServerInterface.ServerBase,ServerInterface.ClientManager):
 
@@ -38,7 +36,6 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientManager):
         self.m_connectorServer = ConnectorServer.ConnectorServer(self)
         self.m_centerClients = ClientManager.ClientManager(self)
         self.m_playerManager = PlayerManager.PlayerManager(self)
-        gCrypt.init(conf)
 
     def timer(self):
         self.m_playerManager.timer()
@@ -59,21 +56,22 @@ class Server(ServerInterface.ServerBase,ServerInterface.ClientManager):
         if flag:
             self.m_connectorServer.begin(self.m_config.getPort())
 
-            sql = "SELECT CONCAT(cast(A.id AS CHAR),'$$$',cast(B.ip AS CHAR),'$$$',cast(A. PORT AS CHAR)) FROM config_svr A,config_routing_table B WHERE A.svrtype = 2 AND A.svrid = B.id"
+            sql = "SELECT CONCAT(cast(A.id AS CHAR),'$$$',cast(B.ip AS CHAR),'$$$',cast(A. PORT AS CHAR)) FROM config_svr A,config_routing_table B WHERE A.svrtype=2 AND A.svrid=B.id AND A.hide=0"
             self.m_config.GetConfigBySql(sql,self.getGameServerConfigCB)
         else:
             logging.error("connect config error and return")
             self.stop()
 
     def getGameServerConfigCB(self,flag,retstr):
-        if flag:
-            # TODO 这里暂时只连接一个
-            strconfig = str(retstr[0])
-            tab = strconfig.split("$$$")
-            appid = int(tab[0])
-            self.m_centerCliHost = str(tab[1])
-            self.m_centerCliPort = int(tab[2])
-            self.m_centerClients.addConnect(appid,self.m_centerCliHost, self.m_centerCliPort)
+        if flag and len(retstr) > 0:
+            for i in range(len(retstr)):
+                logging.info("index=%d,str=%s" % (i,retstr[i]))
+                strconfig = str(retstr[i])
+                tab = strconfig.split("$$$")
+                appid = int(tab[0])
+                self.m_centerCliHost = str(tab[1])
+                self.m_centerCliPort = int(tab[2])
+                self.m_centerClients.addConnect(appid,self.m_centerCliHost, self.m_centerCliPort)
         else:
             logging.error("get gameserver config error")
             self.stop()

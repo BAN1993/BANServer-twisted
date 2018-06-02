@@ -5,7 +5,6 @@ sys.path.append("../../base")
 
 import Base
 import ProtocolSRS
-from CryptManager import gCrypt
 import ConnectorClient
 
 class client:

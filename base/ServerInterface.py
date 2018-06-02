@@ -55,11 +55,12 @@ class ClientBase(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def connectSuccess(self,appid,client):
+    def connectSuccess(self,appid,client,flag):
         """
         成功连接到server
         :param appid: server id
         :param client: ConnectorClient
+        :param flag: bool,连接是否成功
         :return: void
         """
         pass

@@ -13,18 +13,24 @@ class CryptManager(object):
     m_AES_mode = AES.MODE_CBC
     m_AES_hadKey = False
 
-    def init(self, conf):
-        key = str(conf.get("serverConfig", "aeskey"))
-        self.setAESKey(key)
+    #def init(self, conf):
+    #    """设置默认key"""
+    #    key = str(conf.get("serverConfig", "aeskey"))
+    #    self.setAESKey(key)
 
     def setAESKey(self, key):
-        if len(str(key)) < 16:
-            add = 16 - len(key)
-            key = key + ('\0' * add)
-        elif len(str(key)) > 16:
-            raise Base.cryptException("crypt key len must <= 16")
-        self.m_AES_key = str(key)
+        self.m_AES_key = CryptManager.prefKey(key)
         self.m_AES_hadKey = True
+
+    @staticmethod
+    def prefKey(key):
+        retkey = str(key)
+        if len(retkey)<16:
+            add = 16 - len(retkey)
+            retkey = retkey + ('\0' * add)
+        elif len(retkey) > 16:
+            retkey = retkey[0:15]
+        return retkey
 
     def encryptAES(self, buf):
         if not self.m_AES_hadKey or not self.m_AES_key:
@@ -48,6 +54,20 @@ class CryptManager(object):
         # 所以这里统一把加密后的字符串转化为16进制字符串
         return b2a_hex(ciphertext)
 
+    @staticmethod
+    def encryptAESKey(key, buf, mod = AES.MODE_CBC):
+        retkey =  CryptManager.prefKey(key)
+        text = base64.b64encode(buf)
+        cryptor = AES.new(retkey, mod, retkey)
+        length = 16
+        count = len(text)
+        add = 0
+        if (count % length) != 0:
+            add = length - (count % length)
+        text = text + ('\0' * add)
+        ciphertext = cryptor.encrypt(text)
+        return b2a_hex(ciphertext)
+
     def decryptAES(self, text):
         if not self.m_AES_hadKey or not self.m_AES_key:
             raise Base.cryptException("Key is None")
@@ -58,7 +78,16 @@ class CryptManager(object):
         buf = base64.b64decode(plain_text)
         return buf
 
+    @staticmethod
+    def decryptAESKey(key ,buf, mod = AES.MODE_CBC):
+        retkey = CryptManager.prefKey(key)
+        cryptor = AES.new(retkey, mod, retkey)
+        plain_text = cryptor.decrypt(a2b_hex(buf))
+        plain_text.rstrip('\0')
+        buf = base64.b64decode(plain_text)
+        return buf
+
     def md5(self, text):
         return hashlib.md5(str(text)).hexdigest()
 
-gCrypt = CryptManager()
+#gCrypt = CryptManager()
