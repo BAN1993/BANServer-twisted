@@ -79,6 +79,7 @@ class ConnectorClient(object):
 
     def reConnect(self):
         if self.m_reconnect:
+            self.m_crypt.setAESKey("BansvrDFKey2018")
             from twisted.internet import reactor
             reactor.callLater(1,self.connect,self.m_appid,self.m_host,self.m_port)
 

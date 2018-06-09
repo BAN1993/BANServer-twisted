@@ -61,6 +61,7 @@ class ConnectServerProtocl(Protocol):
                     self.m_numid = mpc.appid
                     self.m_svrtype = mpc.svrtype
                     key = "%d%d%d" % (self.m_numid,self.m_svrtype,int(time.time()))
+                    logging.info("new auth:appid=%d,svrtype=%d" % (self.m_numid,self.m_svrtype))
 
                     resp = ProtocolBS.RespAuth()
                     resp.key = key

@@ -17,7 +17,7 @@ class client(ServerInterface.ClientManager):
         self.m_conn = ClientManager.ClientManager(self)
 
     def run(self):
-        self.m_conn.addConnect(1, "127.0.0.1", 8300)
+        self.m_conn.addConnect(1, "127.0.0.1", 8302)
         from twisted.internet import reactor
         reactor.run()
 
