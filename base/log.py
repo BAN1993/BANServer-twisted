@@ -12,7 +12,7 @@ def initLog(fname,subtype,level = logging.DEBUG):
     #如果已经存在日志,则备份
     filename = "log/%s%d.log" % (fname,subtype)
     timestr = time.strftime("%Y-%m-%d-%H%M%S", time.localtime())
-    newname = "%s.%s.log" % (filename,timestr)
+    newname = "%s.%s" % (filename,timestr)
     if os.path.isfile(filename):
         if os.access(filename,os.W_OK):
             os.rename(filename,newname)
