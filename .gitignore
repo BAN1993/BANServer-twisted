@@ -10,3 +10,5 @@ doc/auth.xmind
 *.log
 .idea/inspectionProfiles/Project_Default.xml
 ConfigServer/config.ini
+*.ini
+*.xmind

@@ -23,8 +23,8 @@ function f_start()
 	python $pname &
 
 	sleep 1
-	echo "r.sh - begin tail log/*"
-	tail -f log/*
+	echo "r.sh - begin tail log/*.log"
+	tail -f log/*.log
 }
 
 function f_kill()
@@ -44,6 +44,7 @@ function f_restart()
 {
 	echo "r.sh - server restart"
 	f_kill
+	sleep 1
 	f_start
 }
 
