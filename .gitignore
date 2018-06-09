@@ -1,14 +1,12 @@
-
+*/log
 .idea/BANServer-twisted.iml
 .idea/misc.xml
 .idea/workspace.xml
 .idea/vcs.xml
 .idea/modules.xml
-doc/auth.xmind
+.idea/inspectionProfiles/Project_Default.xml
 *.pyc
 *.log
 *.log
-.idea/inspectionProfiles/Project_Default.xml
-ConfigServer/config.ini
 *.ini
 *.xmind

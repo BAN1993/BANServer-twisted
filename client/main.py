@@ -30,7 +30,7 @@ class client(ServerInterface.ClientManager):
 
             req = ProtocolSRS.ReqLogin()
             req.connid = resp.connid
-            req.userid = "test3003"
+            req.userid = "test0001"
             req.password = "123456"
             sendbuf = req.pack()
             print "send login:userid=%s" % (req.userid)
