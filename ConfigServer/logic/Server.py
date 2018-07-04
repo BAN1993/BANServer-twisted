@@ -3,6 +3,7 @@
 import logging
 import sys
 sys.path.append("../base")
+from twisted.application.internet import TimerService
 
 import Base
 import ConnectorServer
@@ -11,6 +12,8 @@ from DBManager import gDBManager
 
 class Server(object):
     m_isRunning = False
+
+    m_timer = None
 
     m_port = 0
     m_connectorServer = None
@@ -33,11 +36,18 @@ class Server(object):
     def run(self):
         self.m_connectorServer.begin(self.m_port)
 
+        self.m_timer = TimerService(1, self.timer)
+        self.m_timer.startService()
+
         from twisted.internet import reactor
         self.m_isRunning = True
         reactor.run()
 
+    def timer(self):
+        gDBManager.onTimer()
+
     def stop(self):
+        self.m_timer.stopService()
         if self.m_isRunning:
             from twisted.internet import reactor
             reactor.stop()
